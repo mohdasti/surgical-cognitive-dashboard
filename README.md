@@ -44,8 +44,11 @@ This R Shiny application simulates a "Cognitive Black Box"—a real-time analyti
 
 The repository is organized into four main directories:
 |── data/         # Contains raw and processed simulated data
+
 ├── scripts/      # R scripts for the core ML pipeline (data simulation, feature engineering, model training)
+
 ├── shiny_app/    # The R Shiny application source code
+
 └── case_study/   # The final Quarto case study and associated images
 
 
