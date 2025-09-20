@@ -46,20 +46,35 @@ The repository is organized into four main directories:
 
 / (project root)
 ├── data/
+
 │   ├── raw/
+
 │   └── processed/
+
 │
+
 ├── scripts/
+
 │   ├── 01_simulate_data.R
+
 │   ├── 02_feature_engineering.R
+
 │   └── 03_train_model.R
+
 │
+
 ├── shiny_app/
+
 │   └── app.R
+
 │
+
 └── case_study/
+
     ├── cognitive_black_box.qmd
+    
     └── images/
+    
 
 
 ---
