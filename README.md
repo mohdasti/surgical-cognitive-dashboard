@@ -43,3 +43,39 @@ This R Shiny application simulates a "Cognitive Black Box"—a real-time analyti
 ## 📂 Project Structure
 
 The repository is organized into four main directories:
+|── data/         # Contains raw and processed simulated data
+├── scripts/      # R scripts for the core ML pipeline (data simulation, feature engineering, model training)
+├── shiny_app/    # The R Shiny application source code
+└── case_study/   # The final Quarto case study and associated images
+
+
+---
+
+## 🏁 Getting Started
+
+To run this application locally:
+
+1.  **Clone the repository:**
+    ```bash
+    git clone [https://github.com/mohdasti/surgical-cognitive-dashboard.git](https://github.com/mohdasti/surgical-cognitive-dashboard.git)
+    cd surgical-cognitive-dashboard
+    ```
+
+2.  **Install dependencies:**
+    This project uses `renv` for package management. Open the `.Rproj` file in RStudio and run the following command in the console to restore the project library:
+    ```r
+    renv::restore()
+    ```
+
+3.  **Run the Pipeline (Optional):**
+    If you want to re-generate the data and re-train the model, run the scripts in the `/scripts` directory in numerical order.
+    ```r
+    source("scripts/01_simulate_data.R")
+    source("scripts/02_feature_engineering.R")
+    source("scripts/03_train_model.R")
+    ```
+
+4.  **Launch the Shiny App:**
+    ```r
+    shiny::runApp("shiny_app/app.R")
+    ```
