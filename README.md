@@ -7,6 +7,11 @@
 
 A comprehensive machine learning pipeline for real-time surgical cognitive state monitoring using causal feature engineering, Leave-One-Surgeon-Out (LOSO) cross-validation, and multi-model architecture with deployment-ready applications.
 
+**➡️ [Live Demo](https://your-shinyapps-url-here/)** *(coming soon)*  
+**🏠 Local Development**: `make app` → http://localhost:3838
+
+---
+
 ## 🚀 Project Overview
 
 This project implements a complete machine learning system for monitoring surgical cognitive states, featuring:
@@ -21,16 +26,19 @@ This project implements a complete machine learning system for monitoring surgic
 
 ## 📁 Project Structure
 
+**Why Two Directories?**  
+This repository separates the complete development pipeline from the deployment-ready app for clarity and maintainability.
+
 ```
 surgical-cognitive-dashboard/
-├── surgical-cognitive-dashboard-1/     # Main Development Environment
+├── surgical-cognitive-dashboard-1/     # 🔬 Development Pipeline
 │   ├── Complete ML pipeline (scripts 01-05)
 │   ├── Test suite (25 tests passing)
 │   ├── Makefile automation
 │   ├── Shiny app with diagnostics
 │   └── Full development environment
 │
-└── surgical-cognitive-dashboard-app/   # Deployment Package
+└── surgical-cognitive-dashboard-app/   # 🚀 Deployment Package
     ├── Standalone Shiny app
     ├── Docker + nginx setup
     ├── ShinyApps.io deployment
@@ -47,7 +55,7 @@ surgical-cognitive-dashboard/
 
 ## 🧪 Data & Features
 
-### **Raw Sensor Data:**
+### **Raw Sensor Data (Simulated):**
 - **Pupil Diameter (mm)**: Continuous pupillometry measurements
 - **Grip Force (Newtons)**: Surgical instrument grip pressure  
 - **Instrument Tremor (Hz)**: High-frequency tremor measurements
@@ -55,34 +63,35 @@ surgical-cognitive-dashboard/
 - **Blink Events**: Eye blink detection
 - **Tool Usage**: Surgical instrument tracking
 
-### **Causal Engineered Features (8 total):**
-- **Tonic Pupil Level (30s)**: Rolling mean baseline pupil size
-- **Grip Force Variability (15s)**: Rolling standard deviation of grip pressure
-- **Tremor Trend (10s)**: Rolling mean of tremor frequency
-- **Phasic Pupil Change (5s)**: Segment-aware pupil responses
-- **Blink Rate (60s)**: Rolling sum of blink events
-- **Tool Switch Rate (120s)**: Instrument change frequency
-- **Noise Mean (60s)**: Rolling mean ambient noise
-- **Noise Spike Count (60s)**: High-noise event detection
+### **8 Causal Engineered Features:**
+1. **Tonic Pupil Level (30s)**: Rolling mean baseline pupil size
+2. **Grip Force Variability (15s)**: Rolling standard deviation of grip pressure
+3. **Tremor Trend (10s)**: Rolling mean of tremor frequency
+4. **Phasic Pupil Change (5s)**: Segment-aware pupil responses
+5. **Blink Rate (60s)**: Rolling sum of blink events
+6. **Tool Switch Rate (120s)**: Instrument change frequency
+7. **Noise Mean (60s)**: Rolling mean ambient noise
+8. **Noise Spike Count (60s)**: High-noise event detection
 
 **Key Properties:**
 - ✅ **Strictly Causal**: No future data leakage
 - ✅ **Segment-Aware**: Baselines reset on tool switches
 - ✅ **Real-time Legal**: Suitable for live streaming
 
-## 📊 Model Performance
+## 📊 Model Performance (LOSO on Simulated Surgeons)
 
-### **XGBoost Classifier (LOSO Cross-Validation):**
-- **Multi-class Classification**: 4 cognitive states (Optimal, High Load, Fatigued, Attentional Lapse)
-- **Class Weighting**: Balanced training for rare lapse events
-- **Platt Scaling**: Calibrated probabilities for reliable estimates
-- **Calibration Quality**: ECE=0.000296, MCE=0.000296, Brier=0.00192
+### **Primary Safety Class: Attentional Lapse**
+- **PR-AUC (LOSO)**: *[Value from data/diagnostics/loso_eval.rds]*
+- **Calibration**: ECE=0.000296, Brier=0.00192
+- **Prevalence**: 0.4% (rare event detection)
 
-### **Isolation Forest (Anomaly Detection):**
-- **Target**: Rare attentional lapses (0.4% prevalence)
-- **Training**: Non-lapse data only
-- **Threshold**: 99th percentile anomaly score
-- **Purpose**: Catch unusual patterns missed by supervised model
+### **Multi-Class Performance**
+- **4 Cognitive States**: Optimal, High Load, Fatigued, Attentional Lapse
+- **Validation**: Leave-One-Surgeon-Out cross-validation
+- **Calibration**: Platt scaling for reliable probability estimates
+- **Threshold Trade-offs**: Interactive sandbox shows precision/recall vs θ
+
+*Note: All performance metrics are on synthetic data. This is a proof-of-concept for causal ML architecture.*
 
 ## 🏁 Getting Started
 
@@ -143,26 +152,32 @@ docker run -p 8080:80 cogbb
 - **Event Logging**: Optional CSV logging for post-hoc analysis
 
 ### **ML Model Diagnostics (6 Tabs):**
-- **Overview**: Model card, feature list, hyperparameters
-- **Cross-Validation**: Confusion matrix, PR curves, LOSO results
-- **Calibration**: Reliability plots, calibration statistics, probability histograms
-- **Threshold Sandbox**: Interactive threshold tuning with real-time metrics
-- **Feature Importance**: XGBoost importance and SHAP plots
-- **Partial Dependence**: Interactive PD plots for all features
+1. **Overview**: Model card, feature list, hyperparameters
+2. **Cross-Validation**: Confusion matrix, PR curves, LOSO results
+3. **Calibration**: Reliability plots, calibration statistics, probability histograms
+4. **Threshold Sandbox**: Interactive threshold tuning with real-time metrics
+5. **Feature Importance**: XGBoost importance and SHAP plots
+6. **Partial Dependence**: Interactive PD plots for all features
 
-## 🔗 iframe Embedding
+## 🔗 Embedding on Netlify/Quarto
 
-The app is ready for embedding in websites:
+The app includes iframe-safe headers for embedding in websites:
 
 ```html
 <iframe 
-  src="https://your-app-url/" 
+  src="https://your-shinyapps-url/" 
   width="100%" 
   height="820" 
   loading="lazy"
   style="border:1px solid #ddd;border-radius:12px">
 </iframe>
 ```
+
+**Headers configured:**
+- `Content-Security-Policy: frame-ancestors 'self' https://mdastgheib.com https://*.netlify.app`
+- `X-Frame-Options: ALLOWALL`
+
+**Embed Check**: Visit `/embed-check.html` to verify iframe compatibility.
 
 ## 🎯 Use Cases
 
@@ -223,3 +238,5 @@ LinkedIn: [mohdasti](https://linkedin.com/in/mohdasti)
 ## 🙏 Acknowledgments
 
 This project represents a comprehensive implementation of machine learning techniques for real-time cognitive state monitoring in surgical environments. The work combines causal feature engineering, multi-model architecture, and deployment-ready applications for both research and clinical applications.
+
+*All data used in this project is synthetic. No real patient data or PHI is involved.*

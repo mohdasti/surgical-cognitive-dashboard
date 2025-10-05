@@ -52,8 +52,29 @@ rsconnect/
 renv/library/
 **/renv/library/
 
-# Large files
+# Large files - keep small demo artifacts
 *.gif
-*.rds
-*.csv.gz
+data/raw/
+data/processed/*.csv
+data/processed/*.rds
 data/logs/
+
+# Keep essential demo files
+!data/diagnostics/calibration.rds
+!data/diagnostics/loso_eval.rds
+!data/diagnostics/model_artifacts.rds
+!data/diagnostics/threshold_sandbox.rds
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+*.tmp
+*.temp
