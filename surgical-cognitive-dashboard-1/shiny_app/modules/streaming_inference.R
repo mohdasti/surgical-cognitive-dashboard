@@ -45,7 +45,8 @@ CogEngine <- R6::R6Class("CogEngine",
       # segment-local baseline approx
       kpre <- self$CFG$windows$phasic_pupil_s
       df$local_baseline             <- slider::slide_dbl(df$pupil_diameter_mm, mean, .before=kpre-1, .after=0, .complete=TRUE)
-      df$phasic_pupil_change_5s     <- df$pupil_diameter_mm - df$local_baseline
+      # Handle NA values in baseline calculation
+      df$phasic_pupil_change_5s     <- ifelse(is.na(df$local_baseline), 0, df$pupil_diameter_mm - df$local_baseline)
 
       tail(df, 1) |>
         dplyr::select(all_of(self$model$feat_cols))
