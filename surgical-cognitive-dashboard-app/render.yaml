@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: surgical-cognitive-dashboard
+    env: r
+    plan: free
+    buildCommand: "Rscript -e 'if(!requireNamespace(\"renv\", quietly=TRUE)) install.packages(\"renv\"); renv::restore(prompt=FALSE)'"
+    startCommand: "Rscript -e 'shiny::runApp(port=$PORT, host=\"0.0.0.0\")'"
+    envVars:
+      - key: R_VERSION
+        value: 4.3.2
