@@ -1,0 +1,4 @@
+ts,t,state,lapse_p,high_prob,reasons
+2025-10-05T04:15:34Z,100,Optimal,0.1,0.2,low_pupil; stable_grip
+2025-10-05T04:15:35Z,101,High Load,0.3,0.8,high_pupil; variable_grip
+2025-10-05T04:15:35Z,102,Attentional Lapse,0.9,0.1,extreme_pupil; unstable_grip
