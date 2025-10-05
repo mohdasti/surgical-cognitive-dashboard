@@ -47,13 +47,3 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
-
-# R package libraries
-renv/library/
-**/renv/library/
-
-# Large files
-*.gif
-*.rds
-*.csv.gz
-data/logs/

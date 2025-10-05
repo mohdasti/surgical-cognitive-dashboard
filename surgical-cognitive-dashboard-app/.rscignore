@@ -1,0 +1,13 @@
+# RStudio Connect ignore file
+renv/library/
+renv/staging/
+.Rhistory
+.RData
+.Ruserdata
+*.Rproj
+.DS_Store
+data/logs/
+tests/
+scripts/(?!00_setup\.R$).*
+case_study/
+README_dev\.md$

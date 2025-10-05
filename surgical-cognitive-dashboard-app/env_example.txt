@@ -1,0 +1,10 @@
+# Example environment variables for ShinyApps.io deployment
+# Set these environment variables before running deploy.R
+
+export SHINYAPPS_ACCOUNT="your-account-name"
+export SHINYAPPS_TOKEN="your-token-here"
+export SHINYAPPS_SECRET="your-secret-here"
+
+# To use:
+# 1. Fill in your actual ShinyApps.io credentials above
+# 2. Run: source env_example.txt && Rscript deploy.R

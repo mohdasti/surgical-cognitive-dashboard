@@ -1,0 +1,9 @@
+# Static assets directory
+
+This directory can be used for:
+- CSS files
+- JavaScript files  
+- Images
+- Other static assets
+
+For now, it's empty but ready for future enhancements.

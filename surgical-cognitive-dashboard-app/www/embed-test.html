@@ -1,0 +1,107 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Embed Test Suite</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .pass { background-color: #d4edda; border-color: #c3e6cb; }
+        .fail { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        iframe { width: 100%; height: 300px; border: 1px solid #ddd; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <h1>Embed Test Suite</h1>
+    
+    <div class="test info">
+        <h3>Test 1: Direct Access Check</h3>
+        <p>Top ≠ Self? <strong id="direct-result"></strong></p>
+        <p><em>Expected: "No" (when opened directly)</em></p>
+    </div>
+    
+    <div class="test">
+        <h3>Test 2: iframe Embedding Test</h3>
+        <p>This iframe should load the embed-check.html page:</p>
+        <iframe id="embed-iframe" src="embed-check.html"></iframe>
+        <p>If you see "Top ≠ Self? Yes" above, iframe embedding is working!</p>
+    </div>
+    
+    <div class="test">
+        <h3>Test 3: Header Information</h3>
+        <p>Current page headers:</p>
+        <pre id="headers"></pre>
+        <button onclick="checkHeaders()">Check Headers</button>
+    </div>
+    
+    <div class="test">
+        <h3>Test 4: Cross-Origin Test</h3>
+        <p>Test iframe from different origin (if applicable):</p>
+        <button onclick="testCrossOrigin()">Test Cross-Origin</button>
+        <div id="cross-origin-result"></div>
+    </div>
+
+    <script>
+        // Test 1: Direct access check
+        document.getElementById('direct-result').textContent = 
+            (window.top !== window.self) ? "Yes" : "No";
+        
+        // Test 3: Header check function
+        function checkHeaders() {
+            fetch(window.location.href, {method: 'HEAD'})
+                .then(response => {
+                    const headers = [];
+                    for (let [key, value] of response.headers.entries()) {
+                        if (key.toLowerCase().includes('frame') || 
+                            key.toLowerCase().includes('csp') ||
+                            key.toLowerCase().includes('security')) {
+                            headers.push(`${key}: ${value}`);
+                        }
+                    }
+                    document.getElementById('headers').textContent = 
+                        headers.length > 0 ? headers.join('\n') : 'No relevant headers found';
+                })
+                .catch(err => {
+                    document.getElementById('headers').textContent = 
+                        'Error checking headers: ' + err.message;
+                });
+        }
+        
+        // Test 4: Cross-origin test
+        function testCrossOrigin() {
+            const resultDiv = document.getElementById('cross-origin-result');
+            resultDiv.innerHTML = '<p>Testing cross-origin iframe...</p>';
+            
+            // Create a test iframe
+            const testIframe = document.createElement('iframe');
+            testIframe.style.width = '100%';
+            testIframe.style.height = '200px';
+            testIframe.style.border = '1px solid #ddd';
+            testIframe.src = 'embed-check.html';
+            
+            testIframe.onload = function() {
+                try {
+                    const iframeDoc = testIframe.contentDocument || testIframe.contentWindow.document;
+                    resultDiv.innerHTML = '<p class="pass">✓ Cross-origin iframe loaded successfully</p>';
+                } catch (e) {
+                    resultDiv.innerHTML = '<p class="fail">✗ Cross-origin iframe blocked: ' + e.message + '</p>';
+                }
+            };
+            
+            testIframe.onerror = function() {
+                resultDiv.innerHTML = '<p class="fail">✗ Cross-origin iframe failed to load</p>';
+            };
+            
+            resultDiv.appendChild(testIframe);
+        }
+        
+        // Auto-check headers on load
+        window.onload = function() {
+            checkHeaders();
+        };
+    </script>
+</body>
+</html>

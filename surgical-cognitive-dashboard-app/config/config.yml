@@ -1,0 +1,28 @@
+random_seed: 1337
+sampling_hz: 1
+
+windows:
+  tonic_pupil_s: 30
+  grip_var_s: 15
+  tremor_trend_s: 10
+  phasic_pupil_s: 5
+  tool_switch_rate_s: 120
+  noise_rate_s: 60
+  blink_rate_s: 60
+
+thresholds:
+  alert_prob_lapse: 0.50
+  alert_prob_highload: 0.70
+  tonic_low_quantile: 0.05
+  tonic_high_quantile: 0.95
+  grip_z_guard: 2.5
+
+labels:
+  - Optimal
+  - High Load
+  - Fatigued
+  - Attentional Lapse
+
+eval:
+  loso: true
+  cv_folds: 3

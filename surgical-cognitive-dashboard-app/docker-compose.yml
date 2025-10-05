@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  cogbb:
+    build: .
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+    environment:
+      - RENV_PROJECT=/srv/shiny-server/app
+    volumes:
+      # Optional: Mount logs directory for persistence
+      - ./data/logs:/srv/shiny-server/app/data/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
