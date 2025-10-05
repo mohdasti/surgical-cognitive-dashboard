@@ -1,6 +1,9 @@
-<!doctype html>
-<meta charset="utf-8">
+<!doctype html><meta charset="utf-8">
 <title>Embed Check</title>
+<style>body{font:14px/1.4 system-ui;margin:2rem}code{background:#f6f8fa;padding:.1rem .3rem;border-radius:4px}</style>
 <h1>Embed Check</h1>
 <p>Top ≠ Self? <strong id="emb"></strong></p>
-<script>document.getElementById('emb').textContent=(window.top!==window.self)?"Yes":"No";</script>
+<p>Open DevTools → Network → <code>embed-check.html</code> and verify the response includes:</p>
+<pre>Content-Security-Policy: frame-ancestors 'self' https://mdastgheib.com https://www.mdastgheib.com https://mdastgheib.netlify.app
+X-Frame-Options: ALLOWALL</pre>
+<script>document.getElementById('emb').textContent=(window.top!==window.self)?"Yes (embedded)":"No (standalone)";</script>

@@ -18,8 +18,11 @@ rsconnect::setAccountInfo(name=acct, token=token, secret=secret)
 # Deploy the app
 cat("Deploying to shinyapps.io...\n")
 rsconnect::deployApp(
-  appName="surgical-cognitive-dashboard", 
+  appName="surgical-cognitive-dashboard",
   forceUpdate=TRUE
 )
 
 cat("Deployment complete! Check your shinyapps.io dashboard for the URL.\n")
+cat("IMPORTANT: Verify iframe embedding works by testing the headers:\n")
+cat("curl -s -D - https://<your-app-url>/embed-check.html -o /dev/null | awk 'BEGIN{IGNORECASE=1} /content-security-policy|x-frame-options/ {print}'\n")
+cat("If shinyapps.io blocks iframe embedding, use the Docker+nginx deployment instead.\n")

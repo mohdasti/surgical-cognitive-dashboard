@@ -1,0 +1,10 @@
+/*
+  # Lock down sources while allowing typical Quarto assets
+  Content-Security-Policy: default-src 'self';
+  Content-Security-Policy: img-src 'self' data: https:;
+  Content-Security-Policy: script-src 'self' https: 'unsafe-inline';
+  Content-Security-Policy: style-src 'self' https: 'unsafe-inline';
+  Content-Security-Policy: font-src 'self' https: data:;
+  Content-Security-Policy: connect-src 'self' https:;
+  # Allow embedding content (iframes) from the app host only
+  Content-Security-Policy: frame-src <APP_ORIGIN>;

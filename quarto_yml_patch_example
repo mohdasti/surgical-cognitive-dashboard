@@ -1,0 +1,5 @@
+# Add this to your quarto.yml to ensure _headers is deployed with the site
+project:
+  type: website
+  resources:
+    - "_headers"
