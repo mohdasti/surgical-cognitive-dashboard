@@ -1,0 +1,23 @@
+[build]
+  command = "Rscript -e 'if(!requireNamespace(\"renv\", quietly=TRUE)) install.packages(\"renv\"); renv::restore(prompt=FALSE)'"
+  functions = "netlify/functions"
+  publish = "."
+
+[build.environment]
+  R_VERSION = "4.3.2"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[dev]
+  command = "Rscript -e 'shiny::runApp(port=8888, host=\"0.0.0.0\")'"
+  port = 8888
+  publish = "."
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Content-Security-Policy = "frame-ancestors 'self' https://mdastgheib.com https://www.mdastgheib.com https://mdastgheib.netlify.app"
+    X-Frame-Options = "ALLOWALL"
