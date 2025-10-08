@@ -5,6 +5,14 @@ library(DT)
 # Load the setup
 source("../scripts/00_setup.R")
 
+# Source experimental control modules
+source("../R/utils_thresholds.R")
+source("../R/mod_inverted_u_adjuster.R")
+source("../R/mod_unified_sensitivity.R")
+source("../R/mod_fatigue_adaptive.R")
+source("../R/mod_controls_router.R")
+source("../R/mod_experimental_controls_tab.R")
+
 ui <- navbarPage(
   "🧠 Surgical Cognitive Dashboard",
   
@@ -46,12 +54,34 @@ ui <- navbarPage(
       column(3,
         wellPanel(
           h4("🎛️ Control Panel"),
-          checkboxInput("silent", "🔇 Silent mode", FALSE),
-          checkboxInput("enable_logging", "📝 Enable logging", TRUE),
-          hr(),
-          h5("⚙️ Alert Thresholds"),
-          sliderInput("theta_lapse", "🚨 Lapse threshold", 0, 1, 0.3, 0.01),
-          sliderInput("theta_high", "⚠️ High-load threshold", 0, 1, 0.6, 0.01),
+          
+          # Experimental controls toggle
+          checkboxInput("use_experimental", "🧪 Use Experimental Controls", FALSE),
+          helpText(style = "font-size: 0.85em; color: #666;",
+            "When enabled, thresholds come from the Experimental Controls tab"),
+          
+          conditionalPanel(
+            condition = "!input.use_experimental",
+            hr(),
+            checkboxInput("silent", "🔇 Silent mode", FALSE),
+            checkboxInput("enable_logging", "📝 Enable logging", TRUE),
+            hr(),
+            h5("⚙️ Alert Thresholds"),
+            sliderInput("theta_lapse", "🚨 Lapse threshold", 0, 1, 0.3, 0.01),
+            sliderInput("theta_high", "⚠️ High-load threshold", 0, 1, 0.6, 0.01)
+          ),
+          conditionalPanel(
+            condition = "input.use_experimental",
+            hr(),
+            checkboxInput("silent", "🔇 Silent mode", FALSE),
+            checkboxInput("enable_logging", "📝 Enable logging", TRUE),
+            hr(),
+            div(style = "background: #e8f5e9; padding: 10px; border-radius: 5px; border-left: 3px solid #4caf50;",
+              p(style = "margin: 0; font-size: 0.9em;",
+                icon("check-circle"), " Thresholds are controlled by the ",
+                strong("Experimental Controls tab"))
+            )
+          ),
           hr(),
           h5("📊 Display Options"),
           checkboxInput("show_plots", "📈 Show real-time plots", TRUE),
@@ -105,6 +135,11 @@ ui <- navbarPage(
     )
   ),
   
+  # Experimental Controls Tab
+  tabPanel("🧪 Experimental Controls",
+    mod_experimental_controls_tab_ui("exp_controls")
+  ),
+  
   # Model Performance Tab
   tabPanel("📊 Model Performance",
     fluidRow(
@@ -133,6 +168,49 @@ server <- function(input, output, session) {
     t=integer(), type=character(), reasons=character(),
     lapse_p=double(), high_prob=double()
   ))
+  
+  # ========================================================================
+  # EXPERIMENTAL CONTROLS INTEGRATION
+  # ========================================================================
+  
+  # Wrap existing baseline thresholds in a reactive
+  existing_thresholds <- reactive({
+    list(
+      high_load_threshold = input$theta_high,
+      lapse_threshold = input$theta_lapse,
+      source = "current"
+    )
+  })
+  
+  # Mount experimental controls module
+  experimental <- mod_experimental_controls_tab_server(
+    "exp_controls",
+    cfg = list(
+      current_time = reactive({ 
+        data <- realtime_data()
+        if (nrow(data) > 0) tail(data$timestamp, 1) / 60 else 0
+      }),
+      # Custom bounds (optional)
+      high_min = 0.40,
+      high_max = 0.80,
+      lapse_min = 0.70,
+      lapse_max = 0.95
+    ),
+    existing_thresholds = existing_thresholds
+  )
+  
+  # Create unified threshold adapter
+  get_thresholds <- reactive({
+    if (isTRUE(input$use_experimental)) {
+      experimental$thresholds()
+    } else {
+      existing_thresholds()
+    }
+  })
+  
+  # ========================================================================
+  # END EXPERIMENTAL CONTROLS INTEGRATION
+  # ========================================================================
   
   # Real-time data storage for plots
   realtime_data <- reactiveVal(tibble::tibble(
@@ -227,7 +305,8 @@ server <- function(input, output, session) {
       lapse_prob <- tail(current_data$lapse_prob, 1)
     }
     
-    card_class <- if (lapse_prob > input$theta_lapse) "alert-card" else "metric-card"
+    thresh <- get_thresholds()
+    card_class <- if (lapse_prob > thresh$lapse_threshold) "alert-card" else "metric-card"
     
     div(class = card_class,
         h3("🚨 Lapse Probability"),
@@ -580,9 +659,10 @@ server <- function(input, output, session) {
     lapse_prob <- lapse_prob / total_prob
     
     # Determine final state
-    final_state <- if (lapse_prob > input$theta_lapse) {
+    thresh <- get_thresholds()
+    final_state <- if (lapse_prob > thresh$lapse_threshold) {
       "Attentional Lapse"
-    } else if (highload_prob > input$theta_high) {
+    } else if (highload_prob > thresh$high_load_threshold) {
       "High Load"
     } else {
       "Normal"
@@ -610,15 +690,16 @@ server <- function(input, output, session) {
     realtime_data(updated_data)
     
     # Add to alert log if not silent and there's an alert
-    if (!isTRUE(input$silent) && (lapse_prob > input$theta_lapse || highload_prob > input$theta_high)) {
-      alert_type <- ifelse(lapse_prob > input$theta_lapse, "🚨 LAPSE", "⚠️ HIGH LOAD")
+    thresh <- get_thresholds()
+    if (!isTRUE(input$silent) && (lapse_prob > thresh$lapse_threshold || highload_prob > thresh$high_load_threshold)) {
+      alert_type <- ifelse(lapse_prob > thresh$lapse_threshold, "🚨 LAPSE", "⚠️ HIGH LOAD")
       
-      details_text <- if (lapse_prob > input$theta_lapse) {
+      details_text <- if (lapse_prob > thresh$lapse_threshold) {
         sprintf("Lapse probability (%.1f%%) exceeded threshold (%.1f%%)", 
-                lapse_prob * 100, input$theta_lapse * 100)
+                lapse_prob * 100, thresh$lapse_threshold * 100)
       } else {
         sprintf("High Load probability (%.1f%%) exceeded threshold (%.1f%%)", 
-                highload_prob * 100, input$theta_high * 100)
+                highload_prob * 100, thresh$high_load_threshold * 100)
       }
       
       new_alert <- tibble::tibble(
