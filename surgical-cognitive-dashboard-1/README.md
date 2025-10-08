@@ -1,13 +1,14 @@
 # Surgical Cognitive Dashboard 🧠
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Status: Proof of Concept](https://img.shields.io/badge/Status-Proof_of_Concept-blue.svg)](https://github.com/mohdasti/surgical-cognitive-dashboard)
+[![Status: Research Prototype](https://img.shields.io/badge/Status-Research_Prototype-blue.svg)](https://github.com/mohdasti/surgical-cognitive-dashboard)
 [![R Version: 4.x](https://img.shields.io/badge/R-4.x-blue?logo=r)](https://www.r-project.org/)
 [![Shiny App](https://img.shields.io/badge/Shiny-App-blue?logo=rstudio)](https://shiny.rstudio.com/)
+[![Evidence-Based](https://img.shields.io/badge/Evidence-Based-green.svg)](BIOSIGNAL_EVIDENCE_SUMMARY.md)
 
-A comprehensive machine learning pipeline for monitoring surgical cognitive states using causal feature engineering, Leave-One-Surgeon-Out (LOSO) cross-validation, and real-time anomaly detection.
+A real-time surgical cognitive monitoring system with evidence-based biosignal simulation, comprehensive ML diagnostics, and interactive visualization. Features literature-validated parameters from 16 peer-reviewed studies.
 
-**➡️ [View the Live Interactive Dashboard](http://127.0.0.1:3838)** *(when running locally)*
+**➡️ [Run Locally](#-getting-started)** | **[View Evidence Summary](BIOSIGNAL_EVIDENCE_SUMMARY.md)**
 
 ---
 
@@ -28,24 +29,31 @@ This project addresses a critical challenge in patient safety: how can we proact
 
 ## ✨ Key Features
 
-* **Real-Time Streaming:** Live data stream simulation with 5Hz updates and configurable thresholds
-* **Causal Feature Engineering:** 8 strictly causal features with segment-aware baselines
-* **Multi-Model Architecture:** 
-    * **XGBoost Classifier**: Multi-class cognitive state prediction with class weighting
-    * **Isolation Forest**: Anomaly detection for rare attentional lapses
-    * **Platt Scaling**: Probability calibration for reliable estimates
-* **Comprehensive Diagnostics:** 6-tab diagnostic interface with calibration analysis and threshold tuning
-* **Event Logging:** Optional CSV logging for post-hoc analysis and debugging
-* **LOSO Validation:** Leave-One-Surgeon-Out cross-validation for generalizability
+* 🎯 **Evidence-Based Simulation:** Multi-component biosignal generation with parameters from 16 peer-reviewed studies
+* ⏱️ **Real-Time Streaming:** 10-minute surgical simulation with 5Hz updates (200ms intervals) and live clock
+* 📊 **Interactive Visualizations:** 
+    * Pupil diameter tracking with tonic/phasic responses
+    * Grip force variability with micro-movements and fatigue
+    * Tremor amplitude with stress-modulated components
+    * True stacked probability chart with smoothed state transitions
+* 🧠 **Cognitive State Detection:**
+    * Normal operating state
+    * High cognitive load (70-90% threshold)
+    * Attentional lapse detection (60% threshold)
+* 📈 **Real-Time Feature Table:** Live metrics with literature references and physiological indicators
+* 🎨 **Professional Medical UI:** Status cards, dynamic alerts, and responsive layout
 
 ---
 
 ## 🛠️ Tech Stack
 
 * **Language:** R 4.x
-* **Core Packages:** `shiny`, `tidyverse`, `xgboost`, `yardstick`, `slider`, `solitude`, `fastshap`, `pdp`
-* **Development:** `renv` for package management, `testthat` for testing
-* **Build System:** `Makefile` for automated pipeline execution
+* **Core Packages:** 
+    * **Visualization:** `shiny`, `shinydashboard`, `plotly`, `ggplot2`
+    * **Data Processing:** `tidyverse`, `data.table`, `zoo`
+    * **Real-Time:** Custom `CogEngine` R6 class with streaming buffer
+* **Evidence Base:** 16 peer-reviewed studies (see [BIOSIGNAL_EVIDENCE_SUMMARY.md](BIOSIGNAL_EVIDENCE_SUMMARY.md))
+* **Development:** `renv` for package management, Git for version control
 
 ---
 
@@ -70,10 +78,9 @@ This project addresses a critical challenge in patient safety: how can we proact
 │   ├── 05_diagnostics_export.R     # Calibration artifacts
 │   └── utils_logging.R             # Logging utilities
 ├── shiny_app/
-│   ├── app.R                       # Main Shiny application
-│   └── modules/
-│       ├── streaming_inference.R   # CogEngine class
-│       └── diagnostics_module.R    # Diagnostics UI/Server
+│   ├── app_working.R               # Current production version
+│   ├── app.R                       # Main development version
+│   └── app_*.R                     # Various app iterations
 ├── tests/
 │   ├── test_windowing.R            # Feature engineering tests
 │   └── test_features_and_fusion.R  # Integration tests
@@ -85,49 +92,58 @@ This project addresses a critical challenge in patient safety: how can we proact
 
 ---
 
-## 🧪 Data & Features
+## 🧪 Evidence-Based Biosignal Simulation
 
-### **Raw Sensor Data:**
-- **Pupil Diameter (mm):** Continuous pupillometry measurements
-- **Grip Force (Newtons):** Surgical instrument grip pressure  
-- **Instrument Tremor (Hz):** High-frequency tremor measurements
-- **Ambient Noise (dB):** Operating room noise levels
-- **Blink Events:** Eye blink detection
-- **Tool Usage:** Surgical instrument tracking
+### **Pupillometry (Literature-Validated):**
+- **Baseline:** 3-5mm diameter (individual variation)
+- **Tonic Response:** Slow drift over 30-90s windows
+- **Phasic Response:** 0.5-1.5mm dilation under cognitive load (300-3000ms latency)
+- **Micro-movements:** 0.1mm noise at 3-5 Hz
+- **Fatigue Effect:** 5-15% constriction over 10 minutes
+- **Sources:** Beatty (1982), Kahneman & Beatty (1966), Hess & Polt (1964)
 
-### **Causal Engineered Features (8 total):**
-- **Tonic Pupil Level (30s):** Rolling mean baseline pupil size
-- **Grip Force Variability (15s):** Rolling standard deviation of grip pressure
-- **Tremor Trend (10s):** Rolling mean of tremor frequency
-- **Phasic Pupil Change (5s):** Segment-aware pupil responses
-- **Blink Rate (60s):** Rolling sum of blink events
-- **Tool Switch Rate (120s):** Instrument change frequency
-- **Noise Mean (60s):** Rolling mean ambient noise
-- **Noise Spike Count (60s):** High-noise event detection
+### **Grip Force Dynamics:**
+- **Baseline:** 5-25N (task-dependent)
+- **Micro-movements:** 10-15% CV for precision tasks
+- **Fatigue:** 1-3% decline per minute
+- **Load Effect:** 20-30% increased variability under stress
+- **Tremor Coupling:** Correlated with hand tremor
+- **Sources:** Johansson & Westling (1984), Flanagan & Wing (1993)
 
-**Key Properties:**
-- ✅ **Strictly Causal**: No future data leakage
-- ✅ **Segment-Aware**: Baselines reset on tool switches
-- ✅ **Real-time Legal**: Suitable for live streaming
+### **Tremor Characteristics:**
+- **Physiological Range:** 8-12 Hz baseline
+- **Stress Modulation:** +2-5 Hz under load
+- **Amplitude:** 20-100 μm (higher in surgeons)
+- **Fatigue Effect:** +5-20% amplitude increase
+- **Sources:** Elble & Koller (1990), Riviere et al. (1997)
 
-## 📊 Model Performance
+### **State Detection Logic:**
+- **Normal:** Stable baselines, low variability
+- **High Load:** Pupil dilation >0.5mm, grip CV >15%, tremor >10 Hz
+- **Lapse:** Pupil constriction, grip variability spike, tremor irregularity
 
-### **XGBoost Classifier (LOSO Cross-Validation):**
-- **Multi-class Classification:** 4 cognitive states (Optimal, High Load, Fatigued, Attentional Lapse)
-- **Class Weighting:** Balanced training for rare lapse events
-- **Platt Scaling:** Calibrated probabilities for reliable estimates
-- **Calibration Quality:** ECE=0.000296, MCE=0.000296, Brier=0.00192
+📖 **Full methodology with 16 citations:** [BIOSIGNAL_EVIDENCE_SUMMARY.md](BIOSIGNAL_EVIDENCE_SUMMARY.md)
 
-### **Isolation Forest (Anomaly Detection):**
-- **Target:** Rare attentional lapses (0.4% prevalence)
-- **Training:** Non-lapse data only
-- **Threshold:** 99th percentile anomaly score
-- **Purpose:** Catch unusual patterns missed by supervised model
+## 📊 Real-Time Dashboard Features
 
-### **Key Metrics:**
-- **Precision-Recall AUC:** Optimized for rare event detection
-- **Confusion Matrix:** Multi-class performance visualization
-- **Feature Importance:** XGBoost and SHAP-based explanations
+### **Live Monitoring (5Hz Updates):**
+- ⏱️ **Simulation Clock:** MM:SS elapsed time with progress bar
+- 🎯 **Current State:** Dynamic status card with color coding
+- 📊 **State Probabilities:** Real-time percentage display
+- 🚨 **Alert System:** Automatic notifications for state changes
+
+### **Interactive Plots:**
+1. **Pupil Diameter (mm):** Literature-validated tonic/phasic responses
+2. **Grip Force (N):** Real-time variability with micro-movements
+3. **Tremor Amplitude (μm):** Stress-modulated 8-12 Hz oscillations
+4. **Cognitive State Distribution:** True stacked probability chart (sums to 100%)
+
+### **Feature Table:**
+- **Pupil Baseline:** 30-second rolling mean
+- **Grip CV (%):** Coefficient of variation (micro-movement indicator)
+- **Tremor Frequency:** Mean Hz over observation window
+- **Time-on-Task:** Elapsed minutes (fatigue proxy)
+- **Literature References:** Embedded citations for each metric
 
 ---
 
@@ -135,123 +151,141 @@ This project addresses a critical challenge in patient safety: how can we proact
 
 ### **Quick Start (Recommended)**
 
-1. **Clone and Setup:**
+1. **Clone Repository:**
    ```bash
    git clone https://github.com/mohdasti/surgical-cognitive-dashboard.git
-   cd surgical-cognitive-dashboard
-   make setup
+   cd surgical-cognitive-dashboard/surgical-cognitive-dashboard-1
    ```
 
-2. **Run Complete Pipeline:**
-   ```bash
-   make simulate    # Generate synthetic data
-   make features    # Compute causal features
-   make train       # Train XGBoost model
-   make anomaly     # Train Isolation Forest
-   make shap        # Generate explainability plots
-   make eval        # LOSO evaluation
-   make diagnostics # Calibration artifacts
+2. **Install R Dependencies:**
+   ```r
+   # In R console:
+   install.packages(c("shiny", "shinydashboard", "plotly", "tidyverse", 
+                      "data.table", "zoo", "R6"))
    ```
 
 3. **Launch Dashboard:**
    ```bash
-   make app
+   # Option 1: Run directly
+   Rscript -e "shiny::runApp('shiny_app/app_working.R', launch.browser=TRUE)"
+   
+   # Option 2: Open in RStudio
+   # Open shiny_app/app_working.R and click "Run App"
    ```
 
-### **Individual Commands**
+4. **Explore Features:**
+   - Watch the 10-minute simulation unfold in real-time (5Hz updates)
+   - Observe state transitions in the stacked probability chart
+   - Review literature-validated biosignal patterns
+   - Check feature metrics with embedded citations
 
-| Command | Description | Output |
-|---------|-------------|---------|
-| `make setup` | Install packages, setup environment | `renv.lock`, directories |
-| `make simulate` | Generate synthetic surgical data | `data/processed/sim_stream.csv.gz` |
-| `make features` | Compute causal features | `data/processed/features.csv.gz` |
-| `make train` | Train XGBoost + calibration | `data/processed/xgb_loso_models.rds` |
-| `make anomaly` | Train Isolation Forest | `data/processed/lapse_iso.rds` |
-| `make shap` | Generate explainability plots | `data/diagnostics/model_artifacts.rds` |
-| `make eval` | LOSO evaluation | `data/diagnostics/loso_eval.rds` |
-| `make diagnostics` | Calibration artifacts | `data/diagnostics/calibration.rds` |
-| `make app` | Launch Shiny dashboard | Interactive web app |
+### **Development Notes**
 
-### **Testing**
-```bash
-# Run test suite
-Rscript -e "library(testthat); test_dir('tests')"
-```
+The repository includes multiple app versions for reference:
+- `app_working.R` - **Current production version** (run this!)
+- `app_minimal.R` - Minimal debugging version
+- `app_enhanced.R` - Intermediate with ML models
+- `app_full.R` - Full-featured with diagnostics tabs
+
+### **System Requirements**
+- **R:** 4.0 or higher
+- **Memory:** 2GB+ RAM recommended
+- **Browser:** Modern browser (Chrome, Firefox, Safari) for Plotly rendering
+- **OS:** macOS, Linux, or Windows
 
 ---
 
 ## 💻 Dashboard Interface
 
-### **🏥 Live Surgical Dashboard**
-- **Real-time HUD:** 5Hz updates with cognitive state, probabilities, and reasons
-- **Interactive Controls:** Silent mode, threshold sliders, logging toggle
-- **Alert System:** Real-time alerts with detailed reason codes
-- **Event Logging:** Optional CSV logging for post-hoc analysis
-- **Streaming Data:** Replays 3-hour simulated surgical procedures
+### **📊 Main Dashboard Tab**
+- **Status Cards:** Real-time state display with color-coded indicators
+  - 🟢 Normal (green) - Stable operation
+  - 🟡 High Load (yellow) - Elevated cognitive demand  
+  - 🔴 Lapse (red) - Attention deficit detected
+- **Live Clock:** Elapsed time (MM:SS), duration, progress percentage
+- **Real-Time Plots:**
+  - Pupil diameter with tonic/phasic components
+  - Grip force with micro-movements and fatigue
+  - Tremor amplitude (0-100 μm range)
+  - Cognitive state distribution (true stacked probabilities)
+- **Feature Metrics:** Live table with literature citations
+- **Alert System:** Automatic notifications on state transitions
 
-### **🔬 ML Model Diagnostics (6 Tabs)**
-- **Overview:** Model card, feature list, hyperparameters
-- **Cross-Validation:** Confusion matrix, PR curves, LOSO results
-- **Calibration:** Reliability plots, calibration statistics, probability histograms
-- **Threshold Sandbox:** Interactive threshold tuning with real-time metrics
-- **Feature Importance:** XGBoost importance and SHAP plots
-- **Partial Dependence:** Interactive PD plots for all features
+### **🎨 Visualization Features**
+- ✅ **Smoothed Transitions:** 10-point rolling average for probability chart
+- ✅ **Accurate Tooltips:** Individual probabilities (not cumulative)
+- ✅ **Professional Styling:** Medical dashboard aesthetic with `shinydashboard`
+- ✅ **Responsive Layout:** Adapts to different screen sizes
 
 ---
 
 ## 🎯 Use Cases
 
-### **Clinical Applications:**
-- **Surgical Safety:** Real-time cognitive state monitoring and early warning systems
-- **Training & Assessment:** Objective measurement of surgical skill development
-- **Quality Improvement:** Data-driven insights into surgical performance patterns
+### **Research & Education:**
+- 📚 **Teaching Tool:** Demonstrate real-time biosignal processing and cognitive state detection
+- 🔬 **Hypothesis Testing:** Validate literature parameters against synthetic data
+- 📊 **Visualization:** Interactive platform for exploring physiological relationships
+- 💡 **Proof-of-Concept:** Foundation for grant proposals and research plans
 
-### **Research Applications:**
-- **Cognitive Load Studies:** Platform for studying attentional demands during procedures
-- **Model Validation:** Framework for testing new physiological biomarkers
-- **Anomaly Detection:** Research into rare but critical attentional lapses
+### **Technical Demonstration:**
+- 🎨 **Shiny Development:** Example of professional dashboard design with `shinydashboard`
+- ⚡ **Real-Time Processing:** Streaming data with reactive programming patterns
+- 📈 **Plotly Integration:** Advanced visualizations (stacked area charts, custom tooltips)
+- 🧪 **Evidence-Based Simulation:** Literature-validated parameter implementation
 
-### **Technical Applications:**
-- **Real-time ML:** Causal feature engineering for streaming applications
-- **Model Explainability:** SHAP and partial dependence for clinical interpretability
-- **Calibration Research:** Probability calibration for safety-critical decisions
+### **Future Clinical Extensions:**
+- 🏥 **Sensor Integration:** Framework ready for real pupillometry/force sensors
+- 🧠 **ML Enhancement:** Placeholder for actual trained models with real data
+- 🔔 **Alert System:** Foundation for clinical decision support systems
 
 ---
 
-## 🔬 Research Background
+## 🔬 Scientific Foundation
 
-### **Technical Innovations:**
-- **Causal Feature Engineering:** Strict temporal causality for real-time applications
-- **LOSO Cross-Validation:** Surgeon-independent model validation
-- **Anomaly Fusion:** Combining supervised and unsupervised approaches
-- **Probability Calibration:** Reliable uncertainty quantification for safety-critical decisions
+### **Evidence Base (16 Peer-Reviewed Studies):**
 
-### **Scientific Foundation:**
-- **Cognitive Neuroscience:** Pupillometry as a biomarker for neural effort and cognitive load
-- **Motor Control Theory:** Grip force variability as an indicator of attentional state
-- **Human Factors Engineering:** Real-time monitoring for safety-critical environments
-- **Machine Learning:** Causal inference and temporal modeling for streaming data
+**Pupillometry:**
+- Beatty, J. (1982). Task-evoked pupillary responses
+- Kahneman, D., & Beatty, J. (1966). Pupil diameter and load
+- Hess, E.H., & Polt, J.M. (1964). Pupil size in relation to interest
+- Lowenstein, O., & Loewenfeld, I.E. (1964). Nervous control
+- Granholm, E., et al. (1996). Pupillary responses index cognitive load
+
+**Motor Control:**
+- Johansson, R.S., & Westling, G. (1984). Grip force coordination
+- Flanagan, J.R., & Wing, A.M. (1993). Modulation patterns
+- Elble, R.J., & Koller, W.C. (1990). Tremor characteristics
+- Riviere, C.N., et al. (1997). Surgical tremor analysis
+
+**Cognitive Performance:**
+- Warm, J.S., et al. (2008). Vigilance requires hard work
+- Helton, W.S., & Warm, J.S. (2008). Signal salience decline
+- Matthews, G., et al. (2010). Sustained attention to response task
+- Hockey, G.R.J. (1997). Compensatory control model
+
+📖 **Full citations and methodology:** [BIOSIGNAL_EVIDENCE_SUMMARY.md](BIOSIGNAL_EVIDENCE_SUMMARY.md)
 
 ---
 
 ## 📈 Future Directions
 
-### **Technical Enhancements:**
-- **Real Sensor Integration:** Connect with actual pupillometry and force sensors
-- **Deep Learning Models:** Explore LSTM/Transformer architectures for temporal data
-- **Multi-Modal Fusion:** Integrate additional physiological signals (heart rate, EEG)
-- **Edge Computing:** Deploy models for real-time inference on surgical devices
+### **Data Collection Phase:**
+- 🎥 **Surgical Video Analysis:** Motion tracking and procedure segmentation
+- 📱 **Wearable Integration:** Smart surgical gloves with embedded force sensors
+- 👁️ **Eye Tracking:** Commercial pupillometry systems (Tobii, SR Research)
+- 🏥 **Clinical Partnerships:** Collaboration with surgical training centers
 
-### **Clinical Validation:**
-- **Real-World Testing:** Partner with surgical training centers for validation studies
-- **Multi-Surgeon Studies:** Extend to team-based surgical environments
-- **Longitudinal Studies:** Track cognitive state changes over extended procedures
-- **Clinical Trials:** Randomized controlled trials for safety and efficacy
+### **ML Development Phase:**
+- 🧠 **Deep Learning:** LSTM/Transformer for temporal sequence modeling
+- 📊 **Multi-Task Learning:** Simultaneous state and skill level prediction
+- 🔄 **Transfer Learning:** Domain adaptation from simulation to real data
+- ⚖️ **Calibration:** Surgeon-specific threshold tuning
 
-### **Research Extensions:**
-- **Cross-Domain Adaptation:** Apply to other high-stakes domains (aviation, driving)
-- **Personalized Models:** Surgeon-specific calibration and adaptation
-- **Causal Discovery:** Automated feature engineering from raw sensor data
+### **Deployment & Validation:**
+- 🚀 **Edge Computing:** Real-time inference on surgical console hardware
+- 📋 **Clinical Trials:** IRB-approved prospective studies
+- 📈 **Outcome Metrics:** Correlation with surgical performance and complications
+- 🌐 **Open Science:** Public datasets and reproducible pipelines
 
 ---
 
@@ -266,4 +300,20 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **Mohammad Dastgheib**  
 PhD Candidate, Cognitive Neuroscience  
 Portfolio: [mdastgheib.com](https://mdastgheib.com)  
-LinkedIn: [mohdasti](https://linkedin.com/in/mohdasti)
+LinkedIn: [mohdasti](https://linkedin.com/in/mohdasti)  
+GitHub: [@mohdasti](https://github.com/mohdasti)
+
+---
+
+## 🙏 Acknowledgments
+
+This project synthesizes findings from 16 peer-reviewed studies in cognitive neuroscience, motor control, and human factors engineering. Special thanks to the research community for establishing the evidence base that made this simulation possible.
+
+---
+
+## 📸 Screenshots
+
+![Live Dashboard](case_study/images/surgical_console_enhanced.png)
+*Real-time biosignal monitoring with cognitive state detection*
+
+For animated demonstrations, see the `case_study/images/` directory.
