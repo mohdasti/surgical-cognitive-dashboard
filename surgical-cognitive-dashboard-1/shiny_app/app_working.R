@@ -1,6 +1,7 @@
 library(shiny)
 library(plotly)
 library(DT)
+library(shinyjs)
 
 # Load the setup
 source("../scripts/00_setup.R")
@@ -14,10 +15,17 @@ source("../R/mod_controls_router.R")
 source("../R/mod_experimental_controls_tab.R")
 source("../R/threshold_adapter.R")
 source("../R/ui_banner.R")
+source("../R/mod_compare_drawer.R")
 
 ui <- tagList(
+  # Initialize shinyjs
+  shinyjs::useShinyjs(),
+  
   # Mode Banner (fixed at top)
   ui_mode_banner_ui("banner"),
+  
+  # Compare Drawer (available in Live Monitor)
+  mod_compare_drawer_ui("compare"),
   
   navbarPage(
     "🧠 Surgical Cognitive Dashboard",
@@ -372,6 +380,21 @@ server <- function(input, output, session) {
   
   # ========================================================================
   # END MODE BANNER INTEGRATION
+  # ========================================================================
+  
+  # ========================================================================
+  # COMPARE DRAWER INTEGRATION
+  # ========================================================================
+  
+  # Mount compare drawer (what-if analysis)
+  mod_compare_drawer_server(
+    "compare",
+    realtime_data = realtime_data,
+    threshold_adapter = threshold_adapter
+  )
+  
+  # ========================================================================
+  # END COMPARE DRAWER INTEGRATION
   # ========================================================================
   
   # Real-time data storage for plots
