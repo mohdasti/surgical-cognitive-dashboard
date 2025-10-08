@@ -1,9 +1,14 @@
+library(shiny)
+library(plotly)
+library(DT)
+
+# Load the setup and modules
 source("../scripts/00_setup.R")
 source("../R/streaming_inference.R")
 source("../R/diagnostics_module.R")
 source("../scripts/utils_logging.R")
 
-# Load models and data (adjust paths for shiny_app working directory)
+# Load models and data
 models <- readRDS("../data/processed/xgb_loso_models.rds")
 lapse_model <- readRDS("../data/processed/lapse_iso.rds")
 calibration_data <- readRDS("../data/diagnostics/calibration.rds")
@@ -11,10 +16,11 @@ loso_eval <- readRDS("../data/diagnostics/loso_eval.rds")
 model_artifacts <- readRDS("../data/diagnostics/model_artifacts.rds")
 threshold_sandbox <- readRDS("../data/diagnostics/threshold_sandbox.rds")
 
-ui <- shiny::navbarPage(
+ui <- navbarPage(
   "🧠 Surgical Cognitive Dashboard",
-  header = tags$head(
-    tags$base(target="_parent"),
+  
+  # Add custom CSS for better styling
+  tags$head(
     tags$style(HTML("
       .metric-card { 
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -23,6 +29,7 @@ ui <- shiny::navbarPage(
         border-radius: 10px; 
         margin: 5px;
         box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        text-align: center;
       }
       .alert-card { 
         background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
@@ -31,26 +38,27 @@ ui <- shiny::navbarPage(
         border-radius: 10px; 
         margin: 5px;
         animation: pulse 2s infinite;
+        text-align: center;
       }
       @keyframes pulse {
         0% { transform: scale(1); }
         50% { transform: scale(1.05); }
         100% { transform: scale(1); }
       }
-      .status-normal { background-color: #2ecc71; }
-      .status-highload { background-color: #f39c12; }
-      .status-lapse { background-color: #e74c3c; }
+      .status-normal { background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%); }
+      .status-highload { background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); }
+      .status-lapse { background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); }
     "))
   ),
   
   # Live Surgical Dashboard Tab
-  tabPanel("🏥 Live Surgical Dashboard",
+  tabPanel("🏥 Live Dashboard",
     fluidRow(
       column(3,
         wellPanel(
           h4("🎛️ Control Panel"),
-          checkboxInput("silent", "🔇 Silent mode (no alerts)", FALSE),
-          checkboxInput("enable_logging", "📝 Enable event logging", TRUE),
+          checkboxInput("silent", "🔇 Silent mode", FALSE),
+          checkboxInput("enable_logging", "📝 Enable logging", TRUE),
           hr(),
           h5("⚙️ Alert Thresholds"),
           sliderInput("theta_lapse", "🚨 Lapse threshold", 0, 1, CFG$thresholds$alert_prob_lapse, 0.01),
@@ -63,7 +71,7 @@ ui <- shiny::navbarPage(
         )
       ),
       column(9,
-        # Real-time Status Cards
+        # Status Cards Row
         fluidRow(
           column(4, uiOutput("status_card")),
           column(4, uiOutput("lapse_prob_card")),
@@ -73,6 +81,7 @@ ui <- shiny::navbarPage(
         # Real-time Plots
         conditionalPanel(
           condition = "input.show_plots",
+          h4("📈 Real-time Biosignal Monitoring"),
           fluidRow(
             column(6, plotlyOutput("pupil_plot", height = "300px")),
             column(6, plotlyOutput("grip_plot", height = "300px"))
@@ -98,7 +107,7 @@ ui <- shiny::navbarPage(
   ),
   
   # ML Model Diagnostics Tab
-  tabPanel("🤖 ML Model Diagnostics",
+  tabPanel("🤖 ML Diagnostics",
     uiOutput("diagnostics")
   ),
   
@@ -264,7 +273,6 @@ server <- function(input, output, session) {
     if (nrow(current_data) == 0) {
       perf_text <- "N/A"
     } else {
-      # Calculate some performance metric
       recent_data <- tail(current_data, 100)
       avg_lapse_prob <- mean(recent_data$lapse_prob, na.rm = TRUE)
       perf_text <- sprintf("%.1f%%", (1 - avg_lapse_prob) * 100)
@@ -503,3 +511,4 @@ server <- function(input, output, session) {
 }
 
 shinyApp(ui, server)
+

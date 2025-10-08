@@ -1,4 +1,4 @@
-.PHONY: setup simulate features train anomaly shap eval diagnostics app
+.PHONY: setup simulate features train anomaly shap eval diagnostics app local
 
 setup:
 	Rscript -e "source('scripts/00_setup.R'); renv::snapshot(prompt=FALSE)"
@@ -26,3 +26,6 @@ diagnostics:
 
 app:
 	Rscript -e "shiny::runApp('shiny_app', launch.browser=TRUE)"
+
+local:
+	Rscript scripts/run_local_full.R

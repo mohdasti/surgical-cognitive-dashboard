@@ -24,7 +24,15 @@ to_install <- pkgs[!pkgs %in% rownames(installed.packages())]
 if (length(to_install)) install.packages(to_install, repos = "https://cloud.r-project.org")
 invisible(lapply(pkgs, require, character.only = TRUE))
 
-CFG <- yaml::read_yaml("config/config.yml")
+# Get the project root directory (where this script is located)
+# When sourced from shiny_app, getwd() will be shiny_app, so we need to go up one level
+if (basename(getwd()) == "shiny_app") {
+  project_root <- dirname(getwd())
+} else {
+  project_root <- getwd()
+}
+config_path <- file.path(project_root, "config", "config.yml")
+CFG <- yaml::read_yaml(config_path)
 set.seed(CFG$random_seed)
 
 # dirs

@@ -1,28 +1,35 @@
-random_seed: 1337
-sampling_hz: 1
+# Surgical Cognitive Dashboard Configuration
 
+# Random seed for reproducibility
+random_seed: 1337
+
+# Model labels
+labels: ["Normal", "High Load", "Attentional Lapse"]
+
+# Feature computation parameters
+feature_params:
+  min_window_s: 30
+  max_window_s: 120
+
+# Alert thresholds
+thresholds:
+  alert_prob_lapse: 0.3
+  alert_prob_highload: 0.6
+  iso_forest_anomaly_threshold: 0.5
+  tonic_low_quantile: 0.05
+  tonic_high_quantile: 0.95
+  grip_z_guard: 2.0
+
+# Fusion weights for combining XGBoost and Isolation Forest
+fusion_weights:
+  iso_forest: 0.3
+
+# Window sizes for feature computation (in seconds)
 windows:
   tonic_pupil_s: 30
   grip_var_s: 15
   tremor_trend_s: 10
-  phasic_pupil_s: 5
+  blink_rate_s: 60
   tool_switch_rate_s: 120
   noise_rate_s: 60
-  blink_rate_s: 60
-
-thresholds:
-  alert_prob_lapse: 0.50
-  alert_prob_highload: 0.70
-  tonic_low_quantile: 0.05
-  tonic_high_quantile: 0.95
-  grip_z_guard: 2.5
-
-labels:
-  - Optimal
-  - High Load
-  - Fatigued
-  - Attentional Lapse
-
-eval:
-  loso: true
-  cv_folds: 3
+  phasic_pupil_s: 5

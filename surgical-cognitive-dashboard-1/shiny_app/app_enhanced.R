@@ -1,9 +1,14 @@
+library(shiny)
+library(plotly)
+library(DT)
+
+# Load the setup and modules
 source("../scripts/00_setup.R")
 source("../R/streaming_inference.R")
 source("../R/diagnostics_module.R")
 source("../scripts/utils_logging.R")
 
-# Load models and data (adjust paths for shiny_app working directory)
+# Load models and data
 models <- readRDS("../data/processed/xgb_loso_models.rds")
 lapse_model <- readRDS("../data/processed/lapse_iso.rds")
 calibration_data <- readRDS("../data/diagnostics/calibration.rds")
@@ -11,10 +16,11 @@ loso_eval <- readRDS("../data/diagnostics/loso_eval.rds")
 model_artifacts <- readRDS("../data/diagnostics/model_artifacts.rds")
 threshold_sandbox <- readRDS("../data/diagnostics/threshold_sandbox.rds")
 
-ui <- shiny::navbarPage(
-  "🧠 Surgical Cognitive Dashboard",
-  header = tags$head(
-    tags$base(target="_parent"),
+ui <- fluidPage(
+  titlePanel("🧠 Surgical Cognitive Dashboard - Enhanced"),
+  
+  # Add custom CSS for better styling
+  tags$head(
     tags$style(HTML("
       .metric-card { 
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -23,6 +29,7 @@ ui <- shiny::navbarPage(
         border-radius: 10px; 
         margin: 5px;
         box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        text-align: center;
       }
       .alert-card { 
         background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
@@ -31,127 +38,67 @@ ui <- shiny::navbarPage(
         border-radius: 10px; 
         margin: 5px;
         animation: pulse 2s infinite;
+        text-align: center;
       }
       @keyframes pulse {
         0% { transform: scale(1); }
         50% { transform: scale(1.05); }
         100% { transform: scale(1); }
       }
-      .status-normal { background-color: #2ecc71; }
-      .status-highload { background-color: #f39c12; }
-      .status-lapse { background-color: #e74c3c; }
+      .status-normal { background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%); }
+      .status-highload { background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); }
+      .status-lapse { background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); }
     "))
   ),
   
-  # Live Surgical Dashboard Tab
-  tabPanel("🏥 Live Surgical Dashboard",
-    fluidRow(
-      column(3,
-        wellPanel(
-          h4("🎛️ Control Panel"),
-          checkboxInput("silent", "🔇 Silent mode (no alerts)", FALSE),
-          checkboxInput("enable_logging", "📝 Enable event logging", TRUE),
-          hr(),
-          h5("⚙️ Alert Thresholds"),
-          sliderInput("theta_lapse", "🚨 Lapse threshold", 0, 1, CFG$thresholds$alert_prob_lapse, 0.01),
-          sliderInput("theta_high", "⚠️ High-load threshold", 0, 1, CFG$thresholds$alert_prob_highload, 0.01),
-          hr(),
-          h5("📊 Display Options"),
-          checkboxInput("show_plots", "📈 Show real-time plots", TRUE),
-          checkboxInput("show_features", "🔬 Show feature values", TRUE),
-          actionButton("reset_session", "🔄 Reset Session", class = "btn-warning")
-        )
+  sidebarLayout(
+    sidebarPanel(
+      h4("🎛️ Control Panel"),
+      checkboxInput("silent", "🔇 Silent mode", FALSE),
+      checkboxInput("enable_logging", "📝 Enable logging", TRUE),
+      hr(),
+      h5("⚙️ Alert Thresholds"),
+      sliderInput("theta_lapse", "🚨 Lapse threshold", 0, 1, CFG$thresholds$alert_prob_lapse, 0.01),
+      sliderInput("theta_high", "⚠️ High-load threshold", 0, 1, CFG$thresholds$alert_prob_highload, 0.01),
+      hr(),
+      h5("📊 Display Options"),
+      checkboxInput("show_plots", "📈 Show real-time plots", TRUE),
+      checkboxInput("show_features", "🔬 Show feature values", TRUE),
+      actionButton("reset_session", "🔄 Reset Session", class = "btn-warning")
+    ),
+    
+    mainPanel(
+      # Status Cards Row
+      fluidRow(
+        column(4, uiOutput("status_card")),
+        column(4, uiOutput("lapse_prob_card")),
+        column(4, uiOutput("performance_card"))
       ),
-      column(9,
-        # Real-time Status Cards
+      
+      # Real-time Plots
+      conditionalPanel(
+        condition = "input.show_plots",
+        h4("📈 Real-time Biosignal Monitoring"),
         fluidRow(
-          column(4, uiOutput("status_card")),
-          column(4, uiOutput("lapse_prob_card")),
-          column(4, uiOutput("performance_card"))
+          column(6, plotlyOutput("pupil_plot", height = "300px")),
+          column(6, plotlyOutput("grip_plot", height = "300px"))
         ),
-        
-        # Real-time Plots
-        conditionalPanel(
-          condition = "input.show_plots",
-          fluidRow(
-            column(6, plotlyOutput("pupil_plot", height = "300px")),
-            column(6, plotlyOutput("grip_plot", height = "300px"))
-          ),
-          fluidRow(
-            column(6, plotlyOutput("tremor_plot", height = "300px")),
-            column(6, plotlyOutput("state_prob_plot", height = "300px"))
-          )
-        ),
-        
-        # Feature Values Table
-        conditionalPanel(
-          condition = "input.show_features",
-          h4("🔬 Real-time Feature Values"),
-          DT::dataTableOutput("features_table")
-        ),
-        
-        # Alert Log
-        h4("📋 Alert Log"),
-        DT::dataTableOutput("alertlog")
-      )
-    )
-  ),
-  
-  # ML Model Diagnostics Tab
-  tabPanel("🤖 ML Model Diagnostics",
-    uiOutput("diagnostics")
-  ),
-  
-  # Feature Analysis Tab
-  tabPanel("🔬 Feature Analysis",
-    fluidRow(
-      column(3,
-        wellPanel(
-          h4("Feature Selection"),
-          selectInput("selected_feature", "Choose Feature:",
-            choices = c("tonic_pupil_30s", "phasic_pupil_change_5s", "grip_force_var_15s",
-                       "tremor_mean_10s", "blink_rate_60s", "tool_switch_rate_120s",
-                       "noise_mean_60s", "noise_spike_count_60s"),
-            selected = "tonic_pupil_30s"),
-          hr(),
-          h4("Analysis Options"),
-          checkboxInput("show_distribution", "Show Distribution", TRUE),
-          checkboxInput("show_trend", "Show Trend", TRUE),
-          checkboxInput("show_correlation", "Show Correlations", FALSE)
+        fluidRow(
+          column(6, plotlyOutput("tremor_plot", height = "300px")),
+          column(6, plotlyOutput("state_prob_plot", height = "300px"))
         )
       ),
-      column(9,
-        conditionalPanel(
-          condition = "input.show_distribution",
-          plotlyOutput("feature_distribution", height = "300px")
-        ),
-        conditionalPanel(
-          condition = "input.show_trend",
-          plotlyOutput("feature_trend", height = "300px")
-        ),
-        conditionalPanel(
-          condition = "input.show_correlation",
-          plotlyOutput("feature_correlation", height = "400px")
-        )
-      )
-    )
-  ),
-  
-  # Model Performance Tab
-  tabPanel("📊 Model Performance",
-    fluidRow(
-      column(6,
-        h4("🎯 Cross-Validation Results"),
-        plotlyOutput("loso_performance", height = "400px"),
-        h4("📈 Precision-Recall Curves"),
-        plotlyOutput("pr_curves", height = "300px")
+      
+      # Feature Values Table
+      conditionalPanel(
+        condition = "input.show_features",
+        h4("🔬 Real-time Feature Values"),
+        DT::dataTableOutput("features_table")
       ),
-      column(6,
-        h4("🎲 Calibration Analysis"),
-        plotlyOutput("calibration_plot", height = "300px"),
-        h4("📊 Confusion Matrix"),
-        plotlyOutput("confusion_matrix", height = "300px")
-      )
+      
+      # Alert Log
+      h4("📋 Alert Log"),
+      DT::dataTableOutput("alertlog")
     )
   )
 )
@@ -264,7 +211,6 @@ server <- function(input, output, session) {
     if (nrow(current_data) == 0) {
       perf_text <- "N/A"
     } else {
-      # Calculate some performance metric
       recent_data <- tail(current_data, 100)
       avg_lapse_prob <- mean(recent_data$lapse_prob, na.rm = TRUE)
       perf_text <- sprintf("%.1f%%", (1 - avg_lapse_prob) * 100)
@@ -351,84 +297,6 @@ server <- function(input, output, session) {
     DT::datatable(features_df, options = list(dom = 't', pageLength = 10))
   })
   
-  # Diagnostics Module
-  output$diagnostics <- renderUI({ 
-    diagnosticsUI("diag") 
-  })
-  diagnosticsServer("diag", calibration_data, loso_eval, model_artifacts, threshold_sandbox)
-  
-  # Feature Analysis Plots
-  output$feature_distribution <- renderPlotly({
-    current_data <- realtime_data()
-    if (nrow(current_data) == 0) return(plotly_empty())
-    
-    feature_col <- switch(input$selected_feature,
-      "tonic_pupil_30s" = "pupil_diameter",
-      "phasic_pupil_change_5s" = "pupil_diameter", # Simplified
-      "grip_force_var_15s" = "grip_force",
-      "tremor_mean_10s" = "tremor_amplitude",
-      "blink_rate_60s" = "pupil_diameter", # Placeholder
-      "tool_switch_rate_120s" = "grip_force", # Placeholder
-      "noise_mean_60s" = "tremor_amplitude", # Placeholder
-      "noise_spike_count_60s" = "tremor_amplitude", # Placeholder
-      "pupil_diameter"
-    )
-    
-    plot_ly(current_data, x = ~get(feature_col), type = 'histogram',
-            nbinsx = 30, marker = list(color = '#3498db', opacity = 0.7)) %>%
-      layout(title = paste("Distribution of", input$selected_feature),
-             xaxis = list(title = input$selected_feature),
-             yaxis = list(title = "Frequency"))
-  })
-  
-  output$feature_trend <- renderPlotly({
-    current_data <- realtime_data()
-    if (nrow(current_data) == 0) return(plotly_empty())
-    
-    feature_col <- switch(input$selected_feature,
-      "tonic_pupil_30s" = "pupil_diameter",
-      "phasic_pupil_change_5s" = "pupil_diameter",
-      "grip_force_var_15s" = "grip_force",
-      "tremor_mean_10s" = "tremor_amplitude",
-      "blink_rate_60s" = "pupil_diameter",
-      "tool_switch_rate_120s" = "grip_force",
-      "noise_mean_60s" = "tremor_amplitude",
-      "noise_spike_count_60s" = "tremor_amplitude",
-      "pupil_diameter"
-    )
-    
-    plot_ly(current_data, x = ~timestamp, y = ~get(feature_col),
-            type = 'scatter', mode = 'lines+markers',
-            line = list(color = '#e74c3c', width = 2)) %>%
-      layout(title = paste("Trend of", input$selected_feature),
-             xaxis = list(title = "Time"),
-             yaxis = list(title = input$selected_feature))
-  })
-  
-  # Model Performance Plots
-  output$loso_performance <- renderPlotly({
-    if (is.null(loso_eval$loso_df)) return(plotly_empty())
-    
-    plot_ly(loso_eval$loso_df, x = ~holdout, y = ~pr_auc,
-            type = 'bar', marker = list(color = '#3498db')) %>%
-      layout(title = "LOSO Cross-Validation Performance",
-             xaxis = list(title = "Holdout Surgeon"),
-             yaxis = list(title = "PR-AUC"))
-  })
-  
-  output$calibration_plot <- renderPlotly({
-    if (is.null(calibration_data$calib_plot)) return(plotly_empty())
-    
-    # Convert ggplot to plotly
-    ggplotly(calibration_data$calib_plot)
-  })
-  
-  output$confusion_matrix <- renderPlotly({
-    if (is.null(loso_eval$cm_plot)) return(plotly_empty())
-    
-    ggplotly(loso_eval$cm_plot)
-  })
-  
   # Alert Log
   output$alertlog <- DT::renderDataTable({
     logdf()
@@ -503,3 +371,4 @@ server <- function(input, output, session) {
 }
 
 shinyApp(ui, server)
+
