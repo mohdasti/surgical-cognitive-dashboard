@@ -208,20 +208,25 @@ mod_fatigue_adaptive_server <- function(id, cfg = list()) {
            main = "Threshold Decay Over Time")
       lines(timeline_df$time, timeline_df$lapse, col = "#e74c3c", lwd = 2)
       
-      # Mark current time
-      if (input$enabled) {
-        abline(v = current_t, col = "#3498db", lty = 2, lwd = 1.5)
-        points(current_t, current_thresh$high_load_threshold,
-               pch = 19, col = "#f39c12", cex = 2)
-        points(current_t, current_thresh$lapse_threshold,
-               pch = 19, col = "#e74c3c", cex = 2)
-      }
+      # ALWAYS mark current time with a vertical dashed line
+      abline(v = current_t, col = "#3498db", lty = 2, lwd = 2)
+      
+      # Add points at current thresholds
+      points(current_t, current_thresh$high_load_threshold,
+             pch = 19, col = "#f39c12", cex = 2)
+      points(current_t, current_thresh$lapse_threshold,
+             pch = 19, col = "#e74c3c", cex = 2)
+      
+      # Add text label for current time
+      text(current_t, 0.35, 
+           sprintf("t = %.1f min", current_t),
+           col = "#3498db", pos = 4, cex = 0.8, font = 2)
       
       # Add legend
       legend("topright",
              legend = c("High Load", "Lapse", "Current Time"),
              col = c("#f39c12", "#e74c3c", "#3498db"),
-             lwd = c(2, 2, 1.5),
+             lwd = c(2, 2, 2),
              lty = c(1, 1, 2),
              bty = "n", cex = 0.8)
       
