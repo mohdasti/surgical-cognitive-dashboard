@@ -111,7 +111,7 @@ mod_inverted_u_adjuster_server <- function(id, cfg = list()) {
     
     # Compute derived thresholds
     thresholds_reactive <- reactive({
-      source("R/utils_thresholds.R", local = TRUE)
+      # Don't re-source, functions already loaded
       derive_thresholds_from_zone_bounds(b_left(), b_right(), cfg)
     })
     
@@ -136,28 +136,6 @@ mod_inverted_u_adjuster_server <- function(id, cfg = list()) {
           name = 'Performance',
           hovertemplate = 'Arousal: %{x:.2f}<br>Performance: %{y:.2f}<extra></extra>'
         ) %>%
-        # Add zone shading
-        plotly::add_shape(
-          type = "rect",
-          x0 = 0, x1 = left, y0 = 0, y1 = 1,
-          fillcolor = "rgba(231, 76, 60, 0.2)",
-          line = list(width = 0),
-          layer = "below"
-        ) %>%
-        plotly::add_shape(
-          type = "rect",
-          x0 = left, x1 = right, y0 = 0, y1 = 1,
-          fillcolor = "rgba(46, 204, 113, 0.2)",
-          line = list(width = 0),
-          layer = "below"
-        ) %>%
-        plotly::add_shape(
-          type = "rect",
-          x0 = right, x1 = 1, y0 = 0, y1 = 1,
-          fillcolor = "rgba(231, 76, 60, 0.2)",
-          line = list(width = 0),
-          layer = "below"
-        ) %>%
         # Add vertical boundary lines
         plotly::add_segments(
           x = left, xend = left, y = 0, yend = 1,
@@ -177,6 +155,33 @@ mod_inverted_u_adjuster_server <- function(id, cfg = list()) {
           yaxis = list(title = "Performance", range = c(0, 1.1)),
           showlegend = FALSE,
           hovermode = 'x unified',
+          # Add zone shading using shapes in layout
+          shapes = list(
+            # Left zone (Low/Lapse) - red
+            list(
+              type = "rect",
+              x0 = 0, x1 = left, y0 = 0, y1 = 1,
+              fillcolor = "rgba(231, 76, 60, 0.2)",
+              line = list(width = 0),
+              layer = "below"
+            ),
+            # Middle zone (Optimal) - green
+            list(
+              type = "rect",
+              x0 = left, x1 = right, y0 = 0, y1 = 1,
+              fillcolor = "rgba(46, 204, 113, 0.2)",
+              line = list(width = 0),
+              layer = "below"
+            ),
+            # Right zone (High/Overload) - red
+            list(
+              type = "rect",
+              x0 = right, x1 = 1, y0 = 0, y1 = 1,
+              fillcolor = "rgba(231, 76, 60, 0.2)",
+              line = list(width = 0),
+              layer = "below"
+            )
+          ),
           annotations = list(
             list(x = left/2, y = 0.95, text = "<b>Low/Lapse</b>", showarrow = FALSE, font = list(color = "#e74c3c", size = 12)),
             list(x = (left+right)/2, y = 0.95, text = "<b>Optimal</b>", showarrow = FALSE, font = list(color = "#27ae60", size = 14)),

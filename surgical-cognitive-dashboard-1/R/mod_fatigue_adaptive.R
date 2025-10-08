@@ -135,7 +135,7 @@ mod_fatigue_adaptive_server <- function(id, cfg = list()) {
         ))
       }
       
-      source("R/utils_thresholds.R", local = TRUE)
+      # Functions already loaded, no need to source
       
       baseline <- list(
         high_load_threshold0 = input$baseline_high,
@@ -175,7 +175,7 @@ mod_fatigue_adaptive_server <- function(id, cfg = list()) {
     output$timeline_plot <- renderPlot({
       if (!input$enabled) return(NULL)
       
-      source("R/utils_thresholds.R", local = TRUE)
+      # Functions already loaded, no need to source
       
       # Generate timeline
       t_seq <- seq(0, input$t1 + 10, length.out = 100)

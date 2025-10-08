@@ -93,7 +93,7 @@ mod_unified_sensitivity_server <- function(id, cfg = list()) {
     
     # Compute derived thresholds
     thresholds_reactive <- reactive({
-      source("R/utils_thresholds.R", local = TRUE)
+      # Don't re-source, functions already loaded
       derive_thresholds_from_sensitivity(input$sensitivity, cfg)
     })
     
@@ -118,7 +118,7 @@ mod_unified_sensitivity_server <- function(id, cfg = list()) {
     output$threshold_viz <- renderPlot({
       # Generate threshold curves across sensitivity range
       s_seq <- seq(0, 1, length.out = 100)
-      source("R/utils_thresholds.R", local = TRUE)
+      # Functions already loaded, no need to source
       
       thresh_data <- lapply(s_seq, function(s) {
         t <- derive_thresholds_from_sensitivity(s, cfg)
