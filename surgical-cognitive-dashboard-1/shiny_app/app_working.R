@@ -26,17 +26,14 @@ source("../R/mod_compare_drawer.R")
 source("../R/mod_guided_tour.R")
 
 ui <- tagList(
-  # Apply bslib theme
-  theme = create_dashboard_theme(),
-  
-  # Custom CSS for typography and spacing
-  dashboard_css(),
-  
   # Initialize shinyjs
   shinyjs::useShinyjs(),
   
   # Initialize cicerone for guided tour
   cicerone::use_cicerone(),
+  
+  # Custom CSS for typography and spacing
+  dashboard_css(),
   
   # Tour start button (fixed position)
   div(
@@ -60,6 +57,7 @@ ui <- tagList(
   navbarPage(
     "🧠 Surgical Cognitive Dashboard",
     id = "main_navbar",
+    theme = create_dashboard_theme(),  # Apply theme to navbarPage
     
     # Add custom CSS for better styling
     tags$head(
