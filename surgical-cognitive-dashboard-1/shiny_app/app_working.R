@@ -11,6 +11,7 @@ source("../scripts/00_setup.R")
 source("../R/ui_constants.R")
 source("../R/mod_error_sources.R")
 source("../R/mod_scenario_presets.R")
+source("../R/mod_diagnostics_progressive.R")
 source("../R/utils_thresholds.R")
 source("../R/mod_inverted_u_adjuster.R")
 source("../R/mod_unified_sensitivity.R")
@@ -216,126 +217,9 @@ ui <- tagList(
   # ========================================================================
   # TAB 3: DIAGNOSTICS
   # ========================================================================
-  navbarMenu("📊 Diagnostics",
-    tabPanel("Overview",
-      div(style = "margin-bottom: 10px;",
-        h4(style = "margin: 0; color: #2c3e50;", "Model Overview & Performance"),
-        p(style = "margin: 5px 0 0 0; color: #7f8c8d; font-size: 0.9em;",
-          "Simulated ML performance metrics and calibration analysis")
-      ),
-      hr(),
-    fluidRow(
-      column(6,
-        h4("🎯 Simulated Performance Metrics"),
-        plotlyOutput("performance_metrics", height = "400px"),
-        h4("📈 Simulated Precision-Recall"),
-        plotlyOutput("pr_curves", height = "300px")
-      ),
-      column(6,
-        h4("🎲 Calibration Analysis"),
-        plotlyOutput("calibration_plot", height = "300px"),
-        h4("📊 Confusion Matrix"),
-        plotlyOutput("confusion_matrix", height = "300px")
-      )
-    )
-    ),
-    
-    # Additional diagnostic tabs (placeholders for future expansion)
-    tabPanel("Cross-Validation",
-      div(style = "margin-bottom: 10px;",
-        h4(style = "margin: 0; color: #2c3e50;", "Leave-One-Surgeon-Out (LOSO) Validation"),
-        p(style = "margin: 5px 0 0 0; color: #7f8c8d; font-size: 0.9em;",
-          "Model generalizability across different surgeons")
-      ),
-      hr(),
-      wellPanel(
-        h5("🚧 Coming Soon"),
-        p("This tab will display LOSO cross-validation results including:"),
-        tags$ul(
-          tags$li("Per-surgeon holdout performance"),
-          tags$li("Confusion matrices for each fold"),
-          tags$li("PR-AUC curves across surgeons"),
-          tags$li("Feature stability analysis")
-        )
-      )
-    ),
-    
-    tabPanel("Calibration",
-      div(style = "margin-bottom: 10px;",
-        h4(style = "margin: 0; color: #2c3e50;", "Probability Calibration Analysis"),
-        p(style = "margin: 5px 0 0 0; color: #7f8c8d; font-size: 0.9em;",
-          "Reliability plots and calibration metrics")
-      ),
-      hr(),
-      wellPanel(
-        h5("🚧 Coming Soon"),
-        p("This tab will display calibration diagnostics including:"),
-        tags$ul(
-          tags$li("Reliability diagrams (expected vs observed)"),
-          tags$li("ECE, MCE, and Brier scores"),
-          tags$li("Probability histograms by class"),
-          tags$li("Platt scaling parameters")
-        )
-      )
-    ),
-    
-    tabPanel("Threshold Sandbox",
-      div(style = "margin-bottom: 10px;",
-        h4(style = "margin: 0; color: #2c3e50;", "Interactive Threshold Tuning"),
-        p(style = "margin: 5px 0 0 0; color: #7f8c8d; font-size: 0.9em;",
-          "Explore precision-recall tradeoffs at different decision boundaries")
-      ),
-      hr(),
-      wellPanel(
-        h5("🚧 Coming Soon"),
-        p("This tab will provide interactive threshold exploration:"),
-        tags$ul(
-          tags$li("Precision/Recall/F1 vs threshold curves"),
-          tags$li("Confusion matrices at custom thresholds"),
-          tags$li("ROC curves with operating point selection"),
-          tags$li("Cost-sensitive decision analysis")
-        )
-      )
-    ),
-    
-    tabPanel("Feature Importance",
-      div(style = "margin-bottom: 10px;",
-        h4(style = "margin: 0; color: #2c3e50;", "Feature Contribution Analysis"),
-        p(style = "margin: 5px 0 0 0; color: #7f8c8d; font-size: 0.9em;",
-          "XGBoost importance and SHAP-based explanations")
-      ),
-      hr(),
-      wellPanel(
-        h5("🚧 Coming Soon"),
-        p("This tab will display feature importance analysis:"),
-        tags$ul(
-          tags$li("XGBoost gain/cover/frequency importance"),
-          tags$li("SHAP summary plots"),
-          tags$li("Per-class feature contributions"),
-          tags$li("Feature interaction effects")
-        )
-      )
-    ),
-    
-    tabPanel("Partial Dependence",
-      div(style = "margin-bottom: 10px;",
-        h4(style = "margin: 0; color: #2c3e50;", "Partial Dependence Plots"),
-        p(style = "margin: 5px 0 0 0; color: #7f8c8d; font-size: 0.9em;",
-          "Marginal effects of individual features on predictions")
-      ),
-      hr(),
-      wellPanel(
-        h5("🚧 Coming Soon"),
-        p("This tab will provide partial dependence analysis:"),
-        tags$ul(
-          tags$li("PD plots for all engineered features"),
-          tags$li("ICE (Individual Conditional Expectation) curves"),
-          tags$li("2D interaction plots"),
-          tags$li("Feature effect summaries")
-        )
-      )
-    )
-  ) # Close navbarMenu (Diagnostics)
+  tabPanel("📊 Diagnostics",
+    mod_diagnostics_progressive_ui("diagnostics")
+  )
   ) # Close navbarPage
 ) # Close tagList
 
@@ -445,6 +329,122 @@ server <- function(input, output, session) {
   
   # ========================================================================
   # END COMPARE DRAWER INTEGRATION
+  # ========================================================================
+  
+  # ========================================================================
+  # DIAGNOSTICS PROGRESSIVE DISCLOSURE
+  # ========================================================================
+  
+  # Mount diagnostics module with content generators
+  mod_diagnostics_progressive_server(
+    "diagnostics",
+    content_generators = list(
+      threshold_sandbox = function() {
+        div(
+          h5("🎯 Interactive Threshold Tuning"),
+          p("Explore precision-recall tradeoffs at different decision boundaries."),
+          wellPanel(
+            h5("🚧 Coming Soon"),
+            p("This section will provide interactive threshold exploration:"),
+            tags$ul(
+              tags$li("Precision/Recall/F1 vs threshold curves"),
+              tags$li("Confusion matrices at custom thresholds"),
+              tags$li("ROC curves with operating point selection"),
+              tags$li("Cost-sensitive decision analysis")
+            )
+          )
+        )
+      },
+      
+      calibration = function() {
+        div(
+          h5("📊 Probability Calibration Analysis"),
+          p("Reliability analysis of predicted probabilities."),
+          fluidRow(
+            column(6,
+              h5("🎲 Calibration Plot"),
+              plotlyOutput("calibration_plot", height = "300px")
+            ),
+            column(6,
+              h5("📊 Confusion Matrix"),
+              plotlyOutput("confusion_matrix", height = "300px")
+            )
+          )
+        )
+      },
+      
+      overview = function() {
+        div(
+          h5("📋 Model Overview & Performance"),
+          p("Model architecture, hyperparameters, and simulated performance metrics."),
+          fluidRow(
+            column(6,
+              h4("🎯 Simulated Performance Metrics"),
+              plotlyOutput("performance_metrics", height = "400px")
+            ),
+            column(6,
+              h4("📈 Simulated Precision-Recall"),
+              plotlyOutput("pr_curves", height = "300px")
+            )
+          )
+        )
+      },
+      
+      cross_validation = function() {
+        div(
+          h5("🔄 Leave-One-Surgeon-Out (LOSO) Validation"),
+          p("Model generalizability across different surgeons."),
+          wellPanel(
+            h5("🚧 Coming Soon"),
+            p("This section will display LOSO cross-validation results including:"),
+            tags$ul(
+              tags$li("Per-surgeon holdout performance"),
+              tags$li("Confusion matrices for each fold"),
+              tags$li("PR-AUC curves across surgeons"),
+              tags$li("Feature stability analysis")
+            )
+          )
+        )
+      },
+      
+      feature_importance = function() {
+        div(
+          h5("⚖️ Feature Contribution Analysis"),
+          p("XGBoost importance and SHAP-based explanations."),
+          wellPanel(
+            h5("🚧 Coming Soon"),
+            p("This section will display feature importance analysis:"),
+            tags$ul(
+              tags$li("XGBoost gain/cover/frequency importance"),
+              tags$li("SHAP summary plots"),
+              tags$li("Per-class feature contributions"),
+              tags$li("Feature interaction effects")
+            )
+          )
+        )
+      },
+      
+      partial_dependence = function() {
+        div(
+          h5("📈 Partial Dependence Plots"),
+          p("Marginal effects of individual features on predictions."),
+          wellPanel(
+            h5("🚧 Coming Soon"),
+            p("This section will provide partial dependence analysis:"),
+            tags$ul(
+              tags$li("PD plots for all engineered features"),
+              tags$li("ICE (Individual Conditional Expectation) curves"),
+              tags$li("2D interaction plots"),
+              tags$li("Feature effect summaries")
+            )
+          )
+        )
+      }
+    )
+  )
+  
+  # ========================================================================
+  # END DIAGNOSTICS PROGRESSIVE DISCLOSURE
   # ========================================================================
   
   # ========================================================================
