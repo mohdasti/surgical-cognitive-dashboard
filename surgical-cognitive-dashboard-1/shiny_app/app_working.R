@@ -12,13 +12,22 @@ source("../R/mod_unified_sensitivity.R")
 source("../R/mod_fatigue_adaptive.R")
 source("../R/mod_controls_router.R")
 source("../R/mod_experimental_controls_tab.R")
+source("../R/ui_banner.R")
 
-ui <- navbarPage(
-  "🧠 Surgical Cognitive Dashboard",
+ui <- tagList(
+  # Mode Banner (fixed at top)
+  ui_mode_banner_ui("banner"),
   
-  # Add custom CSS for better styling
-  tags$head(
-    tags$style(HTML("
+  navbarPage(
+    "🧠 Surgical Cognitive Dashboard",
+    id = "main_navbar",
+    
+    # Add custom CSS for better styling
+    tags$head(
+      tags$style(HTML("
+      /* Add padding to body to account for fixed banner */
+      body { padding-top: 60px !important; }
+      
       .metric-card { 
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white; 
@@ -157,7 +166,8 @@ ui <- navbarPage(
       )
     )
   )
-)
+  ) # Close navbarPage
+) # Close tagList
 
 server <- function(input, output, session) {
   # Simple simulation data
@@ -210,6 +220,40 @@ server <- function(input, output, session) {
   
   # ========================================================================
   # END EXPERIMENTAL CONTROLS INTEGRATION
+  # ========================================================================
+  
+  # ========================================================================
+  # MODE BANNER INTEGRATION
+  # ========================================================================
+  
+  # Track active tab
+  active_tab <- reactive({
+    # Infer from navbar selection
+    tab_name <- input$main_navbar
+    
+    if (is.null(tab_name)) return("live")
+    
+    # Map tab names to simplified mode names
+    if (grepl("Live Dashboard", tab_name, ignore.case = TRUE)) {
+      "live"
+    } else if (grepl("Experimental", tab_name, ignore.case = TRUE)) {
+      "experimental"
+    } else if (grepl("Performance", tab_name, ignore.case = TRUE)) {
+      "performance"
+    } else {
+      "live"  # Default
+    }
+  })
+  
+  # Mount banner server
+  ui_mode_banner_server(
+    "banner",
+    active_tab = active_tab,
+    threshold_source = get_thresholds
+  )
+  
+  # ========================================================================
+  # END MODE BANNER INTEGRATION
   # ========================================================================
   
   # Real-time data storage for plots
