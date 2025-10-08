@@ -47,3 +47,9 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
+
+# Large R files and renv
+*.rds
+renv/library/
+renv/local/
+renv/staging/
