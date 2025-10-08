@@ -1,4 +1,5 @@
 library(shiny)
+library(bslib)
 library(plotly)
 library(DT)
 library(shinyjs)
@@ -9,6 +10,7 @@ source("../scripts/00_setup.R")
 
 # Source experimental control modules
 source("../R/ui_constants.R")
+source("../R/ui_theme.R")
 source("../R/mod_error_sources.R")
 source("../R/mod_scenario_presets.R")
 source("../R/mod_diagnostics_progressive.R")
@@ -24,6 +26,12 @@ source("../R/mod_compare_drawer.R")
 source("../R/mod_guided_tour.R")
 
 ui <- tagList(
+  # Apply bslib theme
+  theme = create_dashboard_theme(),
+  
+  # Custom CSS for typography and spacing
+  dashboard_css(),
+  
   # Initialize shinyjs
   shinyjs::useShinyjs(),
   
@@ -92,12 +100,8 @@ ui <- tagList(
   # TAB 1: LIVE MONITOR
   # ========================================================================
   tabPanel("🏥 Live Monitor",
-    div(style = "margin-bottom: 10px;",
-      h4(style = "margin: 0; color: #2c3e50;", "Real-Time Surgical Cognitive Monitoring"),
-      p(style = "margin: 5px 0 0 0; color: #7f8c8d; font-size: 0.9em;",
-        "Real-time HUD at 5 Hz with alerts & reasons")
-    ),
-    hr(),
+    tab_subtitle("Real-time HUD at 5 Hz with biosignal monitoring, cognitive state classification, and actionable alerts"),
+    
     fluidRow(
       column(3,
         wellPanel(
@@ -205,12 +209,8 @@ ui <- tagList(
   # TAB 2: TRAINING LAB
   # ========================================================================
   tabPanel("🧪 Training Lab",
-    div(style = "margin-bottom: 10px;",
-      h4(style = "margin: 0; color: #2c3e50;", "Experimental Control Paradigms"),
-      p(style = "margin: 5px 0 0 0; color: #7f8c8d; font-size: 0.9em;",
-        "Explore alternative threshold control strategies grounded in cognitive theory")
-    ),
-    hr(),
+    tab_subtitle("Explore alternative threshold control strategies with scenario presets, theory-driven paradigms, and side-by-side comparison"),
+    
     mod_experimental_controls_tab_ui("exp_controls")
   ),
   
