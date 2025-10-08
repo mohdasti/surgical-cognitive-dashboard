@@ -24,10 +24,10 @@ create_dashboard_theme <- function() {
     heading_font = bslib::font_google("Inter", wght = c(600, 700)),
     code_font = bslib::font_google("Fira Code"),
     
-    # Font sizes (16px base for accessibility)
-    "font-size-base" = "16px",
-    "font-size-sm" = "14px",
-    "font-size-lg" = "18px",
+    # Font sizes (use rem for consistency)
+    "font-size-base" = "1rem",     # 16px default
+    "font-size-sm" = "0.875rem",   # 14px
+    "font-size-lg" = "1.125rem",   # 18px
     
     # Heading sizes (clear hierarchy)
     "h1-font-size" = "2.5rem",    # 40px - Page titles
@@ -37,13 +37,10 @@ create_dashboard_theme <- function() {
     "h5-font-size" = "1.25rem",   # 20px - Card subtitles
     "h6-font-size" = "1rem",      # 16px - Small headings
     
-    # Line heights (8px baseline grid)
+    # Line heights (unitless for flexibility)
     "line-height-base" = 1.5,     # 24px (16px * 1.5)
     "line-height-sm" = 1.4,
     "line-height-lg" = 1.6,
-    
-    # Spacing (8px baseline grid)
-    "spacer" = "8px",
     
     # Colors (Okabe-Ito palette)
     primary = "#009E73",      # Optimal green
@@ -62,17 +59,7 @@ create_dashboard_theme <- function() {
     "gray-600" = "#6c757d",
     "gray-700" = "#495057",
     "gray-800" = "#343a40",
-    "gray-900" = "#212529",
-    
-    # Border radius
-    "border-radius" = "8px",
-    "border-radius-sm" = "4px",
-    "border-radius-lg" = "12px",
-    
-    # Shadows
-    "box-shadow" = "0 2px 8px rgba(0,0,0,0.1)",
-    "box-shadow-sm" = "0 1px 4px rgba(0,0,0,0.08)",
-    "box-shadow-lg" = "0 4px 16px rgba(0,0,0,0.15)"
+    "gray-900" = "#212529"
   )
 }
 
