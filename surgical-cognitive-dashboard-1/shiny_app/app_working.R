@@ -9,6 +9,7 @@ source("../scripts/00_setup.R")
 
 # Source experimental control modules
 source("../R/ui_constants.R")
+source("../R/mod_error_sources.R")
 source("../R/utils_thresholds.R")
 source("../R/mod_inverted_u_adjuster.R")
 source("../R/mod_unified_sensitivity.R")
@@ -151,6 +152,9 @@ ui <- tagList(
           column(4, uiOutput("lapse_prob_card")),
           column(4, uiOutput("performance_card"))
         ),
+        
+        # Error Sources Panel (appears on alerts)
+        mod_error_sources_ui("error_sources"),
         
         # Real-time Plots
         conditionalPanel(
@@ -347,6 +351,17 @@ server <- function(input, output, session) {
   # ========================================================================
   # THRESHOLD ADAPTER - SINGLE SOURCE OF TRUTH
   # ========================================================================
+  
+  # Track alert status for error sources panel
+  alert_active <- reactiveVal(FALSE)
+  current_alert_state <- reactiveVal("Normal")
+  
+  # Mount error sources module
+  error_sources <- mod_error_sources_server(
+    "error_sources",
+    current_state = current_alert_state,
+    alert_active = alert_active
+  )
   
   # Mount experimental controls module
   experimental <- mod_experimental_controls_tab_server(
@@ -931,10 +946,17 @@ server <- function(input, output, session) {
     
     # Add to alert log if not silent and there's an alert
     thresh <- get_thresholds()
-    if (!isTRUE(input$silent) && (lapse_prob > thresh$lapse_threshold || highload_prob > thresh$high_load_threshold)) {
+    is_alert <- (lapse_prob > thresh$lapse_threshold || highload_prob > thresh$high_load_threshold)
+    
+    if (!isTRUE(input$silent) && is_alert) {
       alert_type <- ifelse(lapse_prob > thresh$lapse_threshold, 
                            LABELS$alert_lapse, 
                            LABELS$alert_high)
+      
+      # Determine alert state for error sources
+      alert_state <- ifelse(lapse_prob > thresh$lapse_threshold, 
+                           "Attentional Lapse", 
+                           "High Load")
       
       details_text <- if (lapse_prob > thresh$lapse_threshold) {
         sprintf("%s probability (%.1f%%) exceeded threshold (%.1f%%)", 
@@ -944,6 +966,15 @@ server <- function(input, output, session) {
         sprintf("%s probability (%.1f%%) exceeded threshold (%.1f%%)", 
                 LABELS$high_load,
                 highload_prob * 100, thresh$high_load_threshold * 100)
+      }
+      
+      # Get error sources log entry if logging enabled
+      error_log_entry <- NULL
+      if (isTRUE(input$log_events)) {
+        error_log_entry <- error_sources$get_log_entry()
+        if (!is.null(error_log_entry)) {
+          details_text <- paste0(details_text, " | ", format_error_log(error_log_entry))
+        }
       }
       
       new_alert <- tibble::tibble(
@@ -957,6 +988,14 @@ server <- function(input, output, session) {
       current_log <- logdf()
       updated_log <- dplyr::bind_rows(current_log, new_alert)
       logdf(updated_log)
+      
+      # Update error sources panel state
+      alert_active(TRUE)
+      current_alert_state(alert_state)
+    } else {
+      # No alert - hide error sources panel
+      alert_active(FALSE)
+      current_alert_state("Normal")
     }
     
     idx(i + 1L)
