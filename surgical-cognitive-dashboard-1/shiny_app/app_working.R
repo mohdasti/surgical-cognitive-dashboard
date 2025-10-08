@@ -57,17 +57,25 @@ ui <- tagList(
     "))
   ),
   
-  # Live Surgical Dashboard Tab
-  tabPanel("🏥 Live Dashboard",
+  # ========================================================================
+  # TAB 1: LIVE MONITOR
+  # ========================================================================
+  tabPanel("🏥 Live Monitor",
+    div(style = "margin-bottom: 10px;",
+      h4(style = "margin: 0; color: #2c3e50;", "Real-Time Surgical Cognitive Monitoring"),
+      p(style = "margin: 5px 0 0 0; color: #7f8c8d; font-size: 0.9em;",
+        "Real-time HUD at 5 Hz with alerts & reasons")
+    ),
+    hr(),
     fluidRow(
       column(3,
         wellPanel(
           h4("🎛️ Control Panel"),
           
           # Experimental controls toggle
-          checkboxInput("use_experimental", "🧪 Use Experimental Controls", FALSE),
+          checkboxInput("use_experimental", "🧪 Use Training Lab Controls", FALSE),
           helpText(style = "font-size: 0.85em; color: #666;",
-            "When enabled, thresholds come from the Experimental Controls tab"),
+            "When enabled, thresholds come from the Training Lab tab"),
           
           conditionalPanel(
             condition = "!input.use_experimental",
@@ -88,7 +96,7 @@ ui <- tagList(
             div(style = "background: #e8f5e9; padding: 10px; border-radius: 5px; border-left: 3px solid #4caf50;",
               p(style = "margin: 0; font-size: 0.9em;",
                 icon("check-circle"), " Thresholds are controlled by the ",
-                strong("Experimental Controls tab"))
+                strong("Training Lab tab"))
             )
           ),
           hr(),
@@ -144,13 +152,30 @@ ui <- tagList(
     )
   ),
   
-  # Experimental Controls Tab
-  tabPanel("🧪 Experimental Controls",
+  # ========================================================================
+  # TAB 2: TRAINING LAB
+  # ========================================================================
+  tabPanel("🧪 Training Lab",
+    div(style = "margin-bottom: 10px;",
+      h4(style = "margin: 0; color: #2c3e50;", "Experimental Control Paradigms"),
+      p(style = "margin: 5px 0 0 0; color: #7f8c8d; font-size: 0.9em;",
+        "Explore alternative threshold control strategies grounded in cognitive theory")
+    ),
+    hr(),
     mod_experimental_controls_tab_ui("exp_controls")
   ),
   
-  # Model Performance Tab
-  tabPanel("📊 Model Performance",
+  # ========================================================================
+  # TAB 3: DIAGNOSTICS
+  # ========================================================================
+  navbarMenu("📊 Diagnostics",
+    tabPanel("Overview",
+      div(style = "margin-bottom: 10px;",
+        h4(style = "margin: 0; color: #2c3e50;", "Model Overview & Performance"),
+        p(style = "margin: 5px 0 0 0; color: #7f8c8d; font-size: 0.9em;",
+          "Simulated ML performance metrics and calibration analysis")
+      ),
+      hr(),
     fluidRow(
       column(6,
         h4("🎯 Simulated Performance Metrics"),
@@ -165,7 +190,104 @@ ui <- tagList(
         plotlyOutput("confusion_matrix", height = "300px")
       )
     )
-  )
+    ),
+    
+    # Additional diagnostic tabs (placeholders for future expansion)
+    tabPanel("Cross-Validation",
+      div(style = "margin-bottom: 10px;",
+        h4(style = "margin: 0; color: #2c3e50;", "Leave-One-Surgeon-Out (LOSO) Validation"),
+        p(style = "margin: 5px 0 0 0; color: #7f8c8d; font-size: 0.9em;",
+          "Model generalizability across different surgeons")
+      ),
+      hr(),
+      wellPanel(
+        h5("🚧 Coming Soon"),
+        p("This tab will display LOSO cross-validation results including:"),
+        tags$ul(
+          tags$li("Per-surgeon holdout performance"),
+          tags$li("Confusion matrices for each fold"),
+          tags$li("PR-AUC curves across surgeons"),
+          tags$li("Feature stability analysis")
+        )
+      )
+    ),
+    
+    tabPanel("Calibration",
+      div(style = "margin-bottom: 10px;",
+        h4(style = "margin: 0; color: #2c3e50;", "Probability Calibration Analysis"),
+        p(style = "margin: 5px 0 0 0; color: #7f8c8d; font-size: 0.9em;",
+          "Reliability plots and calibration metrics")
+      ),
+      hr(),
+      wellPanel(
+        h5("🚧 Coming Soon"),
+        p("This tab will display calibration diagnostics including:"),
+        tags$ul(
+          tags$li("Reliability diagrams (expected vs observed)"),
+          tags$li("ECE, MCE, and Brier scores"),
+          tags$li("Probability histograms by class"),
+          tags$li("Platt scaling parameters")
+        )
+      )
+    ),
+    
+    tabPanel("Threshold Sandbox",
+      div(style = "margin-bottom: 10px;",
+        h4(style = "margin: 0; color: #2c3e50;", "Interactive Threshold Tuning"),
+        p(style = "margin: 5px 0 0 0; color: #7f8c8d; font-size: 0.9em;",
+          "Explore precision-recall tradeoffs at different decision boundaries")
+      ),
+      hr(),
+      wellPanel(
+        h5("🚧 Coming Soon"),
+        p("This tab will provide interactive threshold exploration:"),
+        tags$ul(
+          tags$li("Precision/Recall/F1 vs threshold curves"),
+          tags$li("Confusion matrices at custom thresholds"),
+          tags$li("ROC curves with operating point selection"),
+          tags$li("Cost-sensitive decision analysis")
+        )
+      )
+    ),
+    
+    tabPanel("Feature Importance",
+      div(style = "margin-bottom: 10px;",
+        h4(style = "margin: 0; color: #2c3e50;", "Feature Contribution Analysis"),
+        p(style = "margin: 5px 0 0 0; color: #7f8c8d; font-size: 0.9em;",
+          "XGBoost importance and SHAP-based explanations")
+      ),
+      hr(),
+      wellPanel(
+        h5("🚧 Coming Soon"),
+        p("This tab will display feature importance analysis:"),
+        tags$ul(
+          tags$li("XGBoost gain/cover/frequency importance"),
+          tags$li("SHAP summary plots"),
+          tags$li("Per-class feature contributions"),
+          tags$li("Feature interaction effects")
+        )
+      )
+    ),
+    
+    tabPanel("Partial Dependence",
+      div(style = "margin-bottom: 10px;",
+        h4(style = "margin: 0; color: #2c3e50;", "Partial Dependence Plots"),
+        p(style = "margin: 5px 0 0 0; color: #7f8c8d; font-size: 0.9em;",
+          "Marginal effects of individual features on predictions")
+      ),
+      hr(),
+      wellPanel(
+        h5("🚧 Coming Soon"),
+        p("This tab will provide partial dependence analysis:"),
+        tags$ul(
+          tags$li("PD plots for all engineered features"),
+          tags$li("ICE (Individual Conditional Expectation) curves"),
+          tags$li("2D interaction plots"),
+          tags$li("Feature effect summaries")
+        )
+      )
+    )
+  ) # Close navbarMenu (Diagnostics)
   ) # Close navbarPage
 ) # Close tagList
 
@@ -234,11 +356,12 @@ server <- function(input, output, session) {
     if (is.null(tab_name)) return("live")
     
     # Map tab names to simplified mode names
-    if (grepl("Live Dashboard", tab_name, ignore.case = TRUE)) {
+    if (grepl("Live Monitor", tab_name, ignore.case = TRUE)) {
       "live"
-    } else if (grepl("Experimental", tab_name, ignore.case = TRUE)) {
+    } else if (grepl("Training Lab", tab_name, ignore.case = TRUE)) {
       "experimental"
-    } else if (grepl("Performance", tab_name, ignore.case = TRUE)) {
+    } else if (grepl("Diagnostics", tab_name, ignore.case = TRUE) || 
+               grepl("Overview|Cross-Validation|Calibration|Threshold|Feature|Partial", tab_name, ignore.case = TRUE)) {
       "performance"
     } else {
       "live"  # Default
