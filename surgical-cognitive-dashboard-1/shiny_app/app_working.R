@@ -2,6 +2,7 @@ library(shiny)
 library(plotly)
 library(DT)
 library(shinyjs)
+library(cicerone)
 
 # Load the setup
 source("../scripts/00_setup.R")
@@ -16,10 +17,27 @@ source("../R/mod_experimental_controls_tab.R")
 source("../R/threshold_adapter.R")
 source("../R/ui_banner.R")
 source("../R/mod_compare_drawer.R")
+source("../R/mod_guided_tour.R")
 
 ui <- tagList(
   # Initialize shinyjs
   shinyjs::useShinyjs(),
+  
+  # Initialize cicerone for guided tour
+  cicerone::use_cicerone(),
+  
+  # Tour start button (fixed position)
+  div(
+    id = "tour_button",
+    style = "position: fixed; right: 20px; bottom: 20px; z-index: 1000;",
+    actionButton(
+      "start_tour",
+      label = "🎓 Start Tour",
+      icon = icon("play-circle"),
+      class = "btn-info btn-lg",
+      style = "box-shadow: 0 4px 8px rgba(0,0,0,0.3); border-radius: 50px; padding: 12px 24px;"
+    )
+  ),
   
   # Mode Banner (fixed at top)
   ui_mode_banner_ui("banner"),
@@ -136,7 +154,22 @@ ui <- tagList(
         # Real-time Plots
         conditionalPanel(
           condition = "input.show_plots",
-          h4("📈 Real-time Biosignal Monitoring"),
+          h4("📈 Real-time Biosignal Monitoring",
+             tags$sup(
+               style = "margin-left: 8px;",
+               tags$a(
+                 href = "#",
+                 onclick = "return false;",
+                 `data-toggle` = "popover",
+                 `data-trigger` = "hover",
+                 `data-placement` = "top",
+                 `data-html` = "true",
+                 `data-title` = "What are Biosignals?",
+                 `data-content` = "Physiological measurements that reflect cognitive state: <br><strong>Pupil:</strong> Reflects arousal via LC-NE system<br><strong>Grip:</strong> Motor control steadiness<br><strong>Tremor:</strong> Fine motor stability",
+                 icon("question-circle", style = "color: #3498db; font-size: 0.7em;")
+               )
+             )
+          ),
           fluidRow(
             column(6, plotlyOutput("pupil_plot", height = "300px")),
             column(6, plotlyOutput("grip_plot", height = "300px"))
@@ -395,6 +428,25 @@ server <- function(input, output, session) {
   
   # ========================================================================
   # END COMPARE DRAWER INTEGRATION
+  # ========================================================================
+  
+  # ========================================================================
+  # GUIDED TOUR INTEGRATION
+  # ========================================================================
+  
+  # Create guided tour
+  tour_guide <- create_guided_tour()
+  
+  # Start tour when button clicked
+  observeEvent(input$start_tour, {
+    tour_guide$init()$start()
+  })
+  
+  # Initialize popovers for help icons
+  init_popovers(session)
+  
+  # ========================================================================
+  # END GUIDED TOUR INTEGRATION
   # ========================================================================
   
   # Real-time data storage for plots
