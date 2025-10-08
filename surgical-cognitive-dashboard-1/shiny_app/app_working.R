@@ -8,6 +8,7 @@ library(cicerone)
 source("../scripts/00_setup.R")
 
 # Source experimental control modules
+source("../R/ui_constants.R")
 source("../R/utils_thresholds.R")
 source("../R/mod_inverted_u_adjuster.R")
 source("../R/mod_unified_sensitivity.R")
@@ -510,26 +511,28 @@ server <- function(input, output, session) {
       status_class <- "status-normal"
       status_text <- "Initializing"
       status_icon <- "🔄"
+      status_color <- COLORS$text_muted
     } else {
       latest_state <- tail(current_data$final_state, 1)
+      status_color <- get_state_color(latest_state)
+      status_icon <- get_state_icon(latest_state)
+      status_text <- get_state_label(latest_state)
+      
+      # Map to CSS class for backward compatibility
       status_class <- switch(latest_state,
         "Normal" = "status-normal",
         "High Load" = "status-highload", 
         "Attentional Lapse" = "status-lapse",
         "status-normal"
       )
-      status_text <- latest_state
-      status_icon <- switch(latest_state,
-        "Normal" = "✅",
-        "High Load" = "⚠️",
-        "Attentional Lapse" = "🚨",
-        "🔄"
-      )
     }
     
-    div(class = paste("metric-card", status_class),
-        h3(paste(status_icon, "Current Status")),
-        h2(status_text)
+    div(
+      class = paste("metric-card", status_class),
+      style = sprintf("background: linear-gradient(135deg, %s 0%%, %s 100%%);", 
+                     status_color, status_color),
+      h3(paste(status_icon, "Current Status")),
+      h2(status_text)
     )
   })
   
@@ -632,32 +635,32 @@ server <- function(input, output, session) {
     plot_ly(current_data, x = ~(timestamp/60)) %>%
       # Layer 1 (bottom): Normal - from 0 to normal_prob
       add_trace(y = ~state_probs_normal_smooth, 
-                name = '✅ Normal',
+                name = paste0(ICONS$optimal, " ", LABELS$normal),
                 type = 'scatter',
                 mode = 'none',
                 fill = 'tozeroy',
-                fillcolor = 'rgba(46, 204, 113, 0.8)',
+                fillcolor = rgba(COLORS$optimal, 0.8),
                 line = list(width = 0),
-                hovertemplate = 'Normal: %{y:.1%}<extra></extra>') %>%
+                hovertemplate = paste0(LABELS$normal, ': %{y:.1%}<extra></extra>')) %>%
       # Layer 2 (middle): Normal + High Load (cumulative)
       add_trace(y = ~(state_probs_normal_smooth + state_probs_highload_smooth),
-                name = '⚠️ High Load',
+                name = paste0(ICONS$high_load, " ", LABELS$high_load),
                 type = 'scatter',
                 mode = 'none',
                 fill = 'tonexty',
-                fillcolor = 'rgba(243, 156, 18, 0.8)',
+                fillcolor = rgba(COLORS$high_load, 0.8),
                 line = list(width = 0),
-                hovertemplate = 'High Load: %{customdata:.1%}<extra></extra>',
+                hovertemplate = paste0(LABELS$high_load, ': %{customdata:.1%}<extra></extra>'),
                 customdata = ~state_probs_highload_smooth) %>%
       # Layer 3 (top): Normal + High Load + Lapse = 100%
       add_trace(y = ~(state_probs_normal_smooth + state_probs_highload_smooth + state_probs_lapse_smooth),
-                name = '🚨 Lapse',
+                name = paste0(ICONS$lapse, " ", LABELS$lapse),
                 type = 'scatter',
                 mode = 'none',
                 fill = 'tonexty',
-                fillcolor = 'rgba(231, 76, 60, 0.8)',
+                fillcolor = rgba(COLORS$lapse, 0.8),
                 line = list(width = 0),
-                hovertemplate = 'Lapse: %{customdata:.1%}<extra></extra>',
+                hovertemplate = paste0(LABELS$lapse, ': %{customdata:.1%}<extra></extra>'),
                 customdata = ~state_probs_lapse_smooth) %>%
       layout(title = "🧠 Cognitive State Distribution (Stacked Probabilities)",
              xaxis = list(title = "Time (minutes)"),
@@ -929,13 +932,17 @@ server <- function(input, output, session) {
     # Add to alert log if not silent and there's an alert
     thresh <- get_thresholds()
     if (!isTRUE(input$silent) && (lapse_prob > thresh$lapse_threshold || highload_prob > thresh$high_load_threshold)) {
-      alert_type <- ifelse(lapse_prob > thresh$lapse_threshold, "🚨 LAPSE", "⚠️ HIGH LOAD")
+      alert_type <- ifelse(lapse_prob > thresh$lapse_threshold, 
+                           LABELS$alert_lapse, 
+                           LABELS$alert_high)
       
       details_text <- if (lapse_prob > thresh$lapse_threshold) {
-        sprintf("Lapse probability (%.1f%%) exceeded threshold (%.1f%%)", 
+        sprintf("%s probability (%.1f%%) exceeded threshold (%.1f%%)", 
+                LABELS$lapse,
                 lapse_prob * 100, thresh$lapse_threshold * 100)
       } else {
-        sprintf("High Load probability (%.1f%%) exceeded threshold (%.1f%%)", 
+        sprintf("%s probability (%.1f%%) exceeded threshold (%.1f%%)", 
+                LABELS$high_load,
                 highload_prob * 100, thresh$high_load_threshold * 100)
       }
       
