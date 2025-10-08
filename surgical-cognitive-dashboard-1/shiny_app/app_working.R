@@ -134,9 +134,12 @@ ui <- tagList(
           ),
           hr(),
           h5("📊 Display Options"),
-          checkboxInput("show_plots", "📈 Show real-time plots", TRUE),
-          checkboxInput("show_features", "🔬 Show feature values", TRUE),
-          actionButton("reset_session", "🔄 Reset Session", class = "btn-warning")
+          checkboxInput("show_features", "🔬 Show feature values", value = TRUE),
+          actionButton("reset_session", "🔄 Reset Session", class = "btn-warning"),
+          tags$small(
+            style = "color: #7f8c8d; margin-top: 10px; display: block;",
+            "💡 Real-time plots are always visible (core monitoring)"
+          )
         )
       ),
       column(9,
@@ -160,9 +163,8 @@ ui <- tagList(
         # Error Sources Panel (appears on alerts)
         mod_error_sources_ui("error_sources"),
         
-        # Real-time Plots
-        conditionalPanel(
-          condition = "input.show_plots",
+        # Real-time Plots (always visible - core functionality)
+        div(
           h4("📈 Real-time Biosignal Monitoring",
              tags$sup(
                style = "margin-left: 8px;",
