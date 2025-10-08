@@ -45,9 +45,10 @@ mod_controls_router_ui <- function(id) {
 #' @param id Module namespace ID
 #' @param cfg Configuration list
 #' @param existing_thresholds Reactive returning current thresholds from baseline controls
+#' @param preset_overrides Reactive list from scenario presets module (optional)
 #' @return List of reactives: active_source(), thresholds(), extras()
 #' @export
-mod_controls_router_server <- function(id, cfg = list(), existing_thresholds = NULL) {
+mod_controls_router_server <- function(id, cfg = list(), existing_thresholds = NULL, preset_overrides = NULL) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
     

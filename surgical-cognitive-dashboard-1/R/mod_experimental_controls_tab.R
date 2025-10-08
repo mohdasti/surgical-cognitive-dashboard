@@ -81,6 +81,10 @@ mod_experimental_controls_tab_ui <- function(id) {
     
     fluidRow(
       column(12,
+        # Scenario presets bar
+        mod_scenario_presets_ui(ns("presets")),
+        
+        # Controls router
         mod_controls_router_ui(ns("router"))
       )
     )
@@ -96,15 +100,25 @@ mod_experimental_controls_tab_ui <- function(id) {
 #' @export
 mod_experimental_controls_tab_server <- function(id, cfg = list(), existing_thresholds = NULL) {
   moduleServer(id, function(input, output, session) {
-    # Wire through to router
+    # Mount scenario presets module
+    presets <- mod_scenario_presets_server("presets")
+    
+    # Wire through to router with preset overrides
     router <- mod_controls_router_server(
       "router",
       cfg = cfg,
-      existing_thresholds = existing_thresholds
+      existing_thresholds = existing_thresholds,
+      preset_overrides = presets  # Pass preset configuration
     )
     
-    # Return router's interface
-    router
+    # Return router's interface plus preset info
+    list(
+      active_source = router$active_source,
+      thresholds = router$thresholds,
+      extras = router$extras,
+      preset_active = presets$is_active,
+      preset_name = presets$active_preset
+    )
   })
 }
 

@@ -10,6 +10,7 @@ source("../scripts/00_setup.R")
 # Source experimental control modules
 source("../R/ui_constants.R")
 source("../R/mod_error_sources.R")
+source("../R/mod_scenario_presets.R")
 source("../R/utils_thresholds.R")
 source("../R/mod_inverted_u_adjuster.R")
 source("../R/mod_unified_sensitivity.R")
