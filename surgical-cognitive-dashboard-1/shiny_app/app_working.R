@@ -65,7 +65,7 @@ ui <- navbarPage(
           column(12,
             div(style = "background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%); color: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; text-align: center;",
               h3(style = "margin: 5px;", uiOutput("simulation_clock", inline = TRUE)),
-              h5(style = "margin: 5px; opacity: 0.8;", "🔴 LIVE MONITORING - Evidence-Based Simulation")
+              h5(style = "margin: 5px; opacity: 0.8;", "🔴 LIVE MONITORING | 10-Min Segment of a Simulated Robotic-Assisted Cholecystectomy (da Vinci Xi)")
             )
           )
         ),
@@ -272,7 +272,7 @@ server <- function(input, output, session) {
     plot_ly(current_data, x = ~(timestamp/60), y = ~grip_force,
             type = 'scatter', mode = 'lines',
             line = list(color = '#e74c3c', width = 2)) %>%
-      layout(title = "✋ Grip Force (laparoscopic grasper)",
+      layout(title = "✋ Grip Force (da Vinci robotic instruments)",
              xaxis = list(title = "Time (minutes)"),
              yaxis = list(title = "Force (N)", range = c(0, 10)))
   })
@@ -452,8 +452,34 @@ server <- function(input, output, session) {
   
   # Alert Log
   output$alertlog <- DT::renderDataTable({
-    logdf()
-  }, options = list(pageLength = 10, dom = 't'))
+    alert_data <- logdf()
+    if (nrow(alert_data) == 0) {
+      # Return an empty dataframe with correct headers to show an empty table
+      return(
+        data.frame(
+          Time = character(0),
+          Alert = character(0),
+          Details = character(0),
+          `Lapse Prob.` = character(0),
+          `High Load Prob.` = character(0),
+          check.names = FALSE
+        )
+      )
+    }
+    
+    alert_data %>%
+      dplyr::mutate(
+        Time = sprintf("%02d:%02d", floor(t / 60), round(t %% 60)),
+        `Lapse Prob.` = sprintf("%.1f%%", lapse_p * 100),
+        `High Load Prob.` = sprintf("%.1f%%", high_prob * 100)
+      ) %>%
+      dplyr::rename(
+        Alert = type,
+        Details = reasons
+      ) %>%
+      dplyr::select(Time, Alert, Details, `Lapse Prob.`, `High Load Prob.`)
+      
+  }, options = list(pageLength = 5, dom = 'tp', searching = FALSE), rownames = FALSE)
   
   # Main streaming loop - TRUE REAL-TIME SIMULATION
   observe({
@@ -585,12 +611,20 @@ server <- function(input, output, session) {
     
     # Add to alert log if not silent and there's an alert
     if (!isTRUE(input$silent) && (lapse_prob > input$theta_lapse || highload_prob > input$theta_high)) {
-      alert_type <- ifelse(lapse_prob > input$theta_lapse, "🚨 LAPSE", "⚠️ HIGH")
+      alert_type <- ifelse(lapse_prob > input$theta_lapse, "🚨 LAPSE", "⚠️ HIGH LOAD")
+      
+      details_text <- if (lapse_prob > input$theta_lapse) {
+        sprintf("Lapse probability (%.1f%%) exceeded threshold (%.1f%%)", 
+                lapse_prob * 100, input$theta_lapse * 100)
+      } else {
+        sprintf("High Load probability (%.1f%%) exceeded threshold (%.1f%%)", 
+                highload_prob * 100, input$theta_high * 100)
+      }
       
       new_alert <- tibble::tibble(
         t = t,
         type = alert_type,
-        reasons = paste("Simulated alert based on", final_state),
+        reasons = details_text,
         lapse_p = lapse_prob,
         high_prob = highload_prob
       )

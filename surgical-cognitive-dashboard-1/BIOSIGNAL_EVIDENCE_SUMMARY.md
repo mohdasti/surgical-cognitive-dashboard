@@ -25,7 +25,7 @@ This document summarizes the peer-reviewed evidence used to simulate realistic s
 
 ---
 
-## 2️⃣ Grip Force (Laparoscopic Instruments)
+## 2️⃣ Grip Force (Robotic-Assisted Surgery - da Vinci System)
 
 ### Parameters
 - **Baseline**: 4.5 N (device-dependent)
@@ -37,7 +37,7 @@ This document summarizes the peer-reviewed evidence used to simulate realistic s
 
 ### Evidence
 - **Araki et al. 2021** (PMID 27572059): Mean gripping force 3.4–7.0 N depending on forceps design
-- **Olig et al. 2023** (PMID 37201694): Device mechanics vary widely across laparoscopic tools
+- **Olig et al. 2023** (PMID 37201694): Device mechanics vary widely across robotic surgical instruments (da Vinci system)
 - **Ergonomics literature**: Stress increases co-contraction (+5–15% mean force)
 
 ### Cognitive State Relationships
@@ -152,7 +152,7 @@ This document summarizes the peer-reviewed evidence used to simulate realistic s
 ### Primary Load-Bearing Studies
 1. **Wu et al. 2019** - Eye-tracking workload in robotic tasks (PMC7672675)
 2. **De Louche et al. 2024** - HRV step-wise stress in surgery (BJS Open)
-3. **Araki et al. 2021** - Grip forces in laparoscopic surgery (PMID 27572059)
+3. **Araki et al. 2021** - Grip forces in robotic-assisted surgery (PMID 27572059)
 4. **Wells 2013** - Tremor in microsurgery (PMC3989364)
 5. **Becker 2008** - Tremor modeling (PMC3032442)
 6. **Böhm et al. 2001** - HRV randomized trial (JAMA Surgery)
