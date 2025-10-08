@@ -12,6 +12,7 @@ source("../R/mod_unified_sensitivity.R")
 source("../R/mod_fatigue_adaptive.R")
 source("../R/mod_controls_router.R")
 source("../R/mod_experimental_controls_tab.R")
+source("../R/threshold_adapter.R")
 source("../R/ui_banner.R")
 
 ui <- tagList(
@@ -302,17 +303,8 @@ server <- function(input, output, session) {
   ))
   
   # ========================================================================
-  # EXPERIMENTAL CONTROLS INTEGRATION
+  # THRESHOLD ADAPTER - SINGLE SOURCE OF TRUTH
   # ========================================================================
-  
-  # Wrap existing baseline thresholds in a reactive
-  existing_thresholds <- reactive({
-    list(
-      high_load_threshold = input$theta_high,
-      lapse_threshold = input$theta_lapse,
-      source = "current"
-    )
-  })
   
   # Mount experimental controls module
   experimental <- mod_experimental_controls_tab_server(
@@ -328,20 +320,23 @@ server <- function(input, output, session) {
       lapse_min = 0.70,
       lapse_max = 0.95
     ),
-    existing_thresholds = existing_thresholds
+    existing_thresholds = reactive({
+      list(
+        high_load_threshold = input$theta_high,
+        lapse_threshold = input$theta_lapse,
+        source = "current"
+      )
+    })
   )
   
-  # Create unified threshold adapter
-  get_thresholds <- reactive({
-    if (isTRUE(input$use_experimental)) {
-      experimental$thresholds()
-    } else {
-      existing_thresholds()
-    }
-  })
+  # Create centralized threshold adapter (SINGLE SOURCE OF TRUTH)
+  threshold_adapter <- create_threshold_adapter(input, experimental)
+  
+  # Convenience accessor for classifier
+  get_thresholds <- threshold_adapter$get_thresholds
   
   # ========================================================================
-  # END EXPERIMENTAL CONTROLS INTEGRATION
+  # END THRESHOLD ADAPTER
   # ========================================================================
   
   # ========================================================================
@@ -368,11 +363,11 @@ server <- function(input, output, session) {
     }
   })
   
-  # Mount banner server
+  # Mount banner server (uses threshold adapter as single source of truth)
   ui_mode_banner_server(
     "banner",
     active_tab = active_tab,
-    threshold_source = get_thresholds
+    threshold_source = threshold_adapter$get_thresholds
   )
   
   # ========================================================================
