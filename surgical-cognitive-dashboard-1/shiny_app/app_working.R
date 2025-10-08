@@ -688,7 +688,22 @@ server <- function(input, output, session) {
   # Features Table
   output$features_table <- DT::renderDataTable({
     current_data <- realtime_data()
-    if (nrow(current_data) == 0) return(data.frame())
+    if (nrow(current_data) == 0) {
+      # Return empty table with proper structure
+      result <- data.frame(
+        Metric = character(0),
+        Value = character(0),
+        Reference = character(0),
+        stringsAsFactors = FALSE
+      )
+      return(DT::datatable(
+        result,
+        options = list(dom = 't', ordering = FALSE, paging = FALSE),
+        rownames = FALSE,
+        class = 'display compact',
+        style = 'bootstrap4'
+      ))
+    }
     
     latest <- tail(current_data, 1)
     t_current <- latest$timestamp
@@ -725,7 +740,20 @@ server <- function(input, output, session) {
       )
     )
     
-    DT::datatable(features_df, options = list(dom = 't', pageLength = 10), rownames = FALSE)
+    DT::datatable(
+      features_df,
+      options = list(
+        dom = 't',
+        pageLength = 10,
+        ordering = FALSE,
+        paging = FALSE,
+        info = FALSE,
+        autoWidth = TRUE
+      ),
+      rownames = FALSE,
+      class = 'display compact',
+      style = 'bootstrap4'
+    )
   })
   
   # Model Performance Plots (simulated)
@@ -786,33 +814,53 @@ server <- function(input, output, session) {
   # Alert Log
   output$alertlog <- DT::renderDataTable({
     alert_data <- logdf()
+    
+    # Always return a valid data frame
     if (nrow(alert_data) == 0) {
-      # Return an empty dataframe with correct headers to show an empty table
-      return(
-        data.frame(
-          Time = character(0),
-          Alert = character(0),
-          Details = character(0),
-          `Lapse Prob.` = character(0),
-          `High Load Prob.` = character(0),
-          check.names = FALSE
-        )
+      result <- data.frame(
+        Time = character(0),
+        Alert = character(0),
+        Details = character(0),
+        `Lapse Prob.` = character(0),
+        `High Load Prob.` = character(0),
+        check.names = FALSE,
+        stringsAsFactors = FALSE
       )
+    } else {
+      result <- alert_data %>%
+        dplyr::mutate(
+          Time = sprintf("%02d:%02d", floor(t / 60), round(t %% 60)),
+          `Lapse Prob.` = sprintf("%.1f%%", lapse_p * 100),
+          `High Load Prob.` = sprintf("%.1f%%", high_prob * 100)
+        ) %>%
+        dplyr::rename(
+          Alert = type,
+          Details = reasons
+        ) %>%
+        dplyr::select(Time, Alert, Details, `Lapse Prob.`, `High Load Prob.`)
     }
     
-    alert_data %>%
-      dplyr::mutate(
-        Time = sprintf("%02d:%02d", floor(t / 60), round(t %% 60)),
-        `Lapse Prob.` = sprintf("%.1f%%", lapse_p * 100),
-        `High Load Prob.` = sprintf("%.1f%%", high_prob * 100)
-      ) %>%
-      dplyr::rename(
-        Alert = type,
-        Details = reasons
-      ) %>%
-      dplyr::select(Time, Alert, Details, `Lapse Prob.`, `High Load Prob.`)
-      
-  }, options = list(pageLength = 5, dom = 'tp', searching = FALSE), rownames = FALSE)
+    # Return with DT::datatable for better control
+    DT::datatable(
+      result,
+      options = list(
+        pageLength = 5,
+        dom = 'tp',
+        searching = FALSE,
+        ordering = FALSE,
+        info = FALSE,
+        autoWidth = TRUE,
+        columnDefs = list(
+          list(width = '80px', targets = 0),  # Time column
+          list(width = '120px', targets = 1), # Alert column
+          list(className = 'dt-left', targets = '_all')
+        )
+      ),
+      rownames = FALSE,
+      class = 'display compact',
+      style = 'bootstrap4'
+    )
+  })
   
   # Main streaming loop - TRUE REAL-TIME SIMULATION
   observe({
