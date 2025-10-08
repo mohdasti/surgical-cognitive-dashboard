@@ -53,3 +53,8 @@ rsconnect/
 renv/library/
 renv/local/
 renv/staging/
+
+# Large data files
+data/processed/*.csv
+data/processed/*.csv.gz
+case_study/images/*.gif
