@@ -17,23 +17,23 @@ mod_experimental_controls_tab_ui <- function(id) {
       column(12,
         div(
           style = "background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%); color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px;",
-          h2("🧪 Experimental Control Panels", style = "margin-top: 0;"),
-          p(style = "font-size: 1.1em; line-height: 1.6;",
+          h2("🧪 Experimental Control Panels", style = "margin-top: 0; color: white; font-weight: 600;"),
+          p(style = "font-size: 1.1em; line-height: 1.6; color: rgba(255, 255, 255, 0.95);",
             "Welcome to the experimental control interface. This tab showcases three ",
             "alternative paradigms for setting cognitive state thresholds, each grounded ",
             "in cognitive neuroscience theory."
           ),
           tags$ul(
-            style = "font-size: 0.95em; line-height: 1.8;",
-            tags$li(strong("Inverted-U Zone Adjuster:"), 
+            style = "font-size: 0.95em; line-height: 1.8; color: rgba(255, 255, 255, 0.95);",
+            tags$li(tags$strong(style = "color: white;", "Inverted-U Zone Adjuster:"), 
                     " Visualizes the arousal-performance relationship with draggable zone boundaries"),
-            tags$li(strong("Unified Sensitivity Slider:"), 
+            tags$li(tags$strong(style = "color: white;", "Unified Sensitivity Slider:"), 
                     " Single control that intelligently adjusts both thresholds together"),
-            tags$li(strong("Fatigue-Adaptive Thresholds:"), 
+            tags$li(tags$strong(style = "color: white;", "Fatigue-Adaptive Thresholds:"), 
                     " Time-based adaptation that accounts for cognitive fatigue accumulation")
           ),
-          p(style = "font-size: 0.9em; opacity: 0.8; margin-bottom: 0;",
-            "💡 These controls enforce ", em("interdependent logic"), 
+          p(style = "font-size: 0.9em; color: rgba(255, 255, 255, 0.85); margin-bottom: 0;",
+            "💡 These controls enforce ", em(style = "color: white;", "interdependent logic"), 
             " — the system prevents illogical threshold configurations ",
             "that would violate the theoretical progression of cognitive states."
           )

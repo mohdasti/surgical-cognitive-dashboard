@@ -15,9 +15,9 @@ mod_controls_router_ui <- function(id) {
   tagList(
     wellPanel(
       style = "background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px;",
-      h4("🎛️ Control Source Selection", style = "margin-top: 0;"),
+      h4("🎛️ Control Source Selection", style = "margin-top: 0; color: white; font-weight: 600;"),
       p("Select which control paradigm should drive the cognitive state thresholds.", 
-        style = "margin-bottom: 10px; opacity: 0.9;")
+        style = "margin-bottom: 10px; color: rgba(255, 255, 255, 0.95);")
     ),
     
     radioButtons(

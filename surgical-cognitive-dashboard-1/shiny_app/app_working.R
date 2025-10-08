@@ -144,8 +144,8 @@ ui <- tagList(
         fluidRow(
           column(12,
             div(style = "background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%); color: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; text-align: center;",
-              h3(style = "margin: 5px;", uiOutput("simulation_clock", inline = TRUE)),
-              h5(style = "margin: 5px; opacity: 0.8;", "🔴 LIVE MONITORING | 10-Min Segment of a Simulated Robotic-Assisted Cholecystectomy (da Vinci Xi)")
+              h3(style = "margin: 5px; color: white; font-weight: 600;", uiOutput("simulation_clock", inline = TRUE)),
+              h5(style = "margin: 5px; color: rgba(255, 255, 255, 0.95); font-weight: 500;", "🔴 LIVE MONITORING | 10-Min Segment of a Simulated Robotic-Assisted Cholecystectomy (da Vinci Xi)")
             )
           )
         ),
