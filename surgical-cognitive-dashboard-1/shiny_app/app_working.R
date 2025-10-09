@@ -29,30 +29,30 @@ ui <- tagList(
   # Initialize shinyjs
   shinyjs::useShinyjs(),
   
-  # Initialize cicerone for guided tour
-  cicerone::use_cicerone(),
+  # Initialize cicerone for guided tour (DISABLED - missing banner module elements)
+  # cicerone::use_cicerone(),
   
   # Custom CSS for typography and spacing
   dashboard_css(),
   
-  # Tour start button (fixed position)
-  div(
-    id = "tour_button",
-    style = "position: fixed; right: 20px; bottom: 20px; z-index: 1000;",
-    actionButton(
-      "start_tour",
-      label = "🎓 Start Tour",
-      icon = icon("play-circle"),
-      class = "btn-info btn-lg",
-      style = "box-shadow: 0 4px 8px rgba(0,0,0,0.3); border-radius: 50px; padding: 12px 24px;"
-    )
-  ),
+  # Tour start button (fixed position) - DISABLED until banner module implemented
+  # div(
+  #   id = "tour_button",
+  #   style = "position: fixed; right: 20px; bottom: 20px; z-index: 1000;",
+  #   actionButton(
+  #     "start_tour",
+  #     label = "🎓 Start Tour",
+  #     icon = icon("play-circle"),
+  #     class = "btn-info btn-lg",
+  #     style = "box-shadow: 0 4px 8px rgba(0,0,0,0.3); border-radius: 50px; padding: 12px 24px;"
+  #   )
+  # ),
   
-  # Mode Banner (fixed at top)
-  ui_mode_banner_ui("banner"),
+  # Mode Banner (fixed at top) - DISABLED temporarily to fix opacity issue
+  # ui_mode_banner_ui("banner"),
   
-  # Compare Drawer (available in Live Monitor)
-  mod_compare_drawer_ui("compare"),
+  # Compare Drawer (available in Live Monitor) - DISABLED temporarily
+  # mod_compare_drawer_ui("compare"),
   
   navbarPage(
     "🧠 Surgical Cognitive Dashboard",
@@ -305,12 +305,12 @@ server <- function(input, output, session) {
     }
   })
   
-  # Mount banner server (uses threshold adapter as single source of truth)
-  ui_mode_banner_server(
-    "banner",
-    active_tab = active_tab,
-    threshold_source = threshold_adapter$get_thresholds
-  )
+  # Mount banner server (uses threshold adapter as single source of truth) - DISABLED
+  # ui_mode_banner_server(
+  #   "banner",
+  #   active_tab = active_tab,
+  #   threshold_source = threshold_adapter$get_thresholds
+  # )
   
   # ========================================================================
   # END MODE BANNER INTEGRATION
@@ -320,12 +320,12 @@ server <- function(input, output, session) {
   # COMPARE DRAWER INTEGRATION
   # ========================================================================
   
-  # Mount compare drawer (what-if analysis)
-  mod_compare_drawer_server(
-    "compare",
-    realtime_data = realtime_data,
-    threshold_adapter = threshold_adapter
-  )
+  # Mount compare drawer (what-if analysis) - DISABLED
+  # mod_compare_drawer_server(
+  #   "compare",
+  #   realtime_data = realtime_data,
+  #   threshold_adapter = threshold_adapter
+  # )
   
   # ========================================================================
   # END COMPARE DRAWER INTEGRATION
@@ -451,16 +451,16 @@ server <- function(input, output, session) {
   # GUIDED TOUR INTEGRATION
   # ========================================================================
   
-  # Create guided tour
-  tour_guide <- create_guided_tour()
+  # Create guided tour - DISABLED until banner module elements exist
+  # tour_guide <- create_guided_tour()
   
   # Start tour when button clicked
-  observeEvent(input$start_tour, {
-    tour_guide$init()$start()
-  })
+  # observeEvent(input$start_tour, {
+  #   tour_guide$init()$start()
+  # })
   
   # Initialize popovers for help icons
-  init_popovers(session)
+  # init_popovers(session)
   
   # ========================================================================
   # END GUIDED TOUR INTEGRATION
