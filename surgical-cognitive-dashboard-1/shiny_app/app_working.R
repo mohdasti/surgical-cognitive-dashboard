@@ -283,12 +283,30 @@ server <- function(input, output, session) {
   # ========================================================================
   
   # Load pre-computed diagnostic artifacts
-  diagnostics <- list(
-    calibration = readRDS("../data/diagnostics/calibration.rds"),
-    loso = readRDS("../data/diagnostics/loso_eval.rds"),
-    artifacts = readRDS("../data/diagnostics/model_artifacts.rds"),
-    threshold_sandbox = readRDS("../data/diagnostics/threshold_sandbox.rds")
-  )
+  diagnostics <- tryCatch({
+    list(
+      calibration = readRDS("data/diagnostics/calibration.rds"),
+      loso = readRDS("data/diagnostics/loso_eval.rds"),
+      artifacts = readRDS("data/diagnostics/model_artifacts.rds"),
+      threshold_sandbox = readRDS("data/diagnostics/threshold_sandbox.rds")
+    )
+  }, error = function(e) {
+    cat("ERROR loading diagnostic data:", e$message, "\n")
+    # Return empty structure to prevent crashes
+    list(
+      calibration = list(calib_plot = NULL, prob_hist_plot = NULL, calib_stats_gt = NULL),
+      loso = list(cm_plot = NULL, pr_lapse_plot = NULL, loso_df = data.frame()),
+      artifacts = list(xgb_importance_plot = data.frame(), pd_plots = list()),
+      threshold_sandbox = list(data = list(lapse_p = NULL, lab_bin = NULL))
+    )
+  })
+  
+  # Debug: Print diagnostic data status
+  cat("Diagnostic data loaded:\n")
+  cat("  - Calibration plots:", !is.null(diagnostics$calibration$calib_plot), "\n")
+  cat("  - LOSO plots:", !is.null(diagnostics$loso$cm_plot), "\n")
+  cat("  - Feature importance:", nrow(diagnostics$artifacts$xgb_importance_plot), "features\n")
+  cat("  - PD plots:", length(diagnostics$artifacts$pd_plots), "plots\n")
   
   # Simple simulation data
   idx <- reactiveVal(1L)
@@ -773,19 +791,37 @@ server <- function(input, output, session) {
   
   # CALIBRATION SECTION
   output$calibration_plot_real <- renderPlot({
-    diagnostics$calibration$calib_plot
+    plot_obj <- diagnostics$calibration$calib_plot
+    cat("Rendering calibration plot:", !is.null(plot_obj), "\n")
+    if (is.null(plot_obj)) {
+      plot.new()
+      text(0.5, 0.5, "Calibration plot not available", cex = 1.2, col = "#666")
+      return()
+    }
+    print(plot_obj)
   })
   
   output$prob_hist_plot_real <- renderPlot({
-    diagnostics$calibration$prob_hist_plot
+    plot_obj <- diagnostics$calibration$prob_hist_plot
+    cat("Rendering prob hist plot:", !is.null(plot_obj), "\n")
+    if (is.null(plot_obj)) {
+      plot.new()
+      text(0.5, 0.5, "Probability histogram not available", cex = 1.2, col = "#666")
+      return()
+    }
+    print(plot_obj)
   })
   
   output$calibration_stats <- renderUI({
     stats <- diagnostics$calibration$calib_stats_gt
     if (is.null(stats)) return(HTML("<p>Calibration statistics not available</p>"))
     
-    # Convert gt table to HTML
-    HTML(as.character(stats))
+    # Convert gt table to HTML properly
+    tryCatch({
+      HTML(as.character(stats))
+    }, error = function(e) {
+      HTML("<p>Error rendering calibration statistics</p>")
+    })
   })
   
   # MODEL OVERVIEW SECTION
