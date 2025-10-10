@@ -86,7 +86,11 @@ ERROR_MECHANISMS <- list(
       "Proactive problem anticipation",
       "Effective team communication"
     ),
-    citations = c()
+    citations = c(
+      "Csikszentmihalyi, M. (1990). Flow: The Psychology of Optimal Experience. Harper & Row.",
+      "Yerkes, R.M., & Dodson, J.D. (1908). The relation of strength of stimulus to rapidity of habit-formation. Journal of Comparative Neurology and Psychology, 18, 459-482.",
+      "Endsley, M.R. (1995). Toward a theory of situation awareness in dynamic systems. Human Factors, 37(1), 32-64."
+    )
   )
 )
 
@@ -148,7 +152,10 @@ COUNTERMEASURES <- list(
       "📊 Monitor Trends: Watch for early warning signs",
       "🎓 Reflect: Note what's working for future cases"
     ),
-    citations = c()
+    citations = c(
+      "Moulton et al. (2010). Slowing down when you should: Expertise and surgical performance. Annals of Surgery, 252(1), 223-226.",
+      "Yule et al. (2006). Surgeons' non-technical skills in the operating room. Annals of Surgery, 244(1), 139-148."
+    )
   )
 )
 
