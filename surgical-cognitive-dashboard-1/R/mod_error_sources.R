@@ -215,7 +215,7 @@ mod_error_sources_ui <- function(id) {
   
   div(
     id = ns("error_panel_container"),
-    style = "display: none; transition: opacity 0.3s ease;",  # Hidden by default, smooth transition
+    style = "display: block; transition: opacity 0.3s ease;",  # Always visible for testing
     
     div(
       class = "error-sources-panel",
@@ -317,19 +317,15 @@ mod_error_sources_server <- function(id, current_state, alert_active) {
       }
     })
     
-    # Show/hide panel based on alert status - DEBOUNCED to prevent flickering
-    # Use debounce to prevent rapid show/hide during initialization
-    alert_debounced <- debounce(reactive({ alert_active() }), 1000)  # 1 second debounce
-    
-    observe({
-      alert_state <- alert_debounced()
-      
-      if (isTRUE(alert_state)) {
-        shinyjs::show("error_panel_container", anim = TRUE, animType = "fade")
-      } else {
-        shinyjs::hide("error_panel_container", anim = TRUE, animType = "fade")
-      }
-    })
+    # Show/hide panel based on alert status
+    # DISABLED FOR TESTING - Panel is always visible now
+    # observe({
+    #   if (alert_active()) {
+    #     shinyjs::show("error_panel_container")
+    #   } else {
+    #     shinyjs::hide("error_panel_container")
+    #   }
+    # })
     
     # Current state badge
     output$current_state_badge <- renderUI({
