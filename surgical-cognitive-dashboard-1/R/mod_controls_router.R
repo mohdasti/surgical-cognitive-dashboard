@@ -35,8 +35,37 @@ mod_controls_router_ui <- function(id) {
     
     hr(),
     
-    # Dynamic UI for selected module
-    uiOutput(ns("active_module_ui"))
+    # Static UI with conditionalPanel (replaces renderUI to prevent opacity)
+    conditionalPanel(
+      condition = "input.control_source == 'current'",
+      ns = ns,
+      div(
+        style = "padding: 20px; background: #f8f9fa; border-radius: 8px;",
+        h5("ℹ️ Using Baseline Controls"),
+        p("The system is using the standard independent threshold sliders ",
+          "from the main control panel. These controls allow independent ",
+          "adjustment of High Load and Lapse thresholds."),
+        p(strong("Note:"), " This mode does not enforce interdependent logic.")
+      )
+    ),
+    
+    conditionalPanel(
+      condition = "input.control_source == 'inverted_u'",
+      ns = ns,
+      mod_inverted_u_adjuster_ui(ns("inverted_u"))
+    ),
+    
+    conditionalPanel(
+      condition = "input.control_source == 'sensitivity'",
+      ns = ns,
+      mod_unified_sensitivity_ui(ns("sensitivity"))
+    ),
+    
+    conditionalPanel(
+      condition = "input.control_source == 'fatigue'",
+      ns = ns,
+      mod_fatigue_adaptive_ui(ns("fatigue"))
+    )
   )
 }
 
@@ -57,22 +86,8 @@ mod_controls_router_server <- function(id, cfg = list(), existing_thresholds = N
     sensitivity <- mod_unified_sensitivity_server("sensitivity", cfg)
     fatigue <- mod_fatigue_adaptive_server("fatigue", cfg)
     
-    # Render appropriate UI based on selection
-    output$active_module_ui <- renderUI({
-      switch(input$control_source,
-        "current" = div(
-          style = "padding: 20px; background: #f8f9fa; border-radius: 8px;",
-          h5("ℹ️ Using Baseline Controls"),
-          p("The system is using the standard independent threshold sliders ",
-            "from the main control panel. These controls allow independent ",
-            "adjustment of High Load and Lapse thresholds."),
-          p(strong("Note:"), " This mode does not enforce interdependent logic.")
-        ),
-        "inverted_u" = mod_inverted_u_adjuster_ui(ns("inverted_u")),
-        "sensitivity" = mod_unified_sensitivity_ui(ns("sensitivity")),
-        "fatigue" = mod_fatigue_adaptive_ui(ns("fatigue"))
-      )
-    })
+    # renderUI REMOVED - now using conditionalPanel in UI (prevents opacity)
+    # UI switching is handled by conditionalPanel in mod_controls_router_ui()
     
     # Route thresholds based on active source
     thresholds_routed <- reactive({
