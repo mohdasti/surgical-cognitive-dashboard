@@ -745,7 +745,8 @@ server <- function(input, output, session) {
     )
     
     features_df
-  }, options = list(dom = 't', ordering = FALSE, paging = FALSE), rownames = FALSE)
+  }, options = list(dom = 't', ordering = FALSE, paging = FALSE), 
+     rownames = FALSE, server = FALSE)  # Client-side to prevent Ajax errors
   
   # Model Performance Plots (simulated)
   output$performance_metrics <- renderPlotly({
