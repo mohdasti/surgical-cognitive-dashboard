@@ -540,6 +540,37 @@ server <- function(input, output, session) {
     tail(current_data$final_state, 1)
   })
   
+  # OLD renderUI deleted:
+  # output$status_card <- renderUI({
+    current_data <- realtime_data()
+    if (nrow(current_data) == 0) {
+      status_class <- "status-normal"
+      status_text <- "Initializing"
+      status_icon <- "🔄"
+      status_color <- COLORS$text_muted
+    } else {
+      latest_state <- tail(current_data$final_state, 1)
+      status_color <- get_state_color(latest_state)
+      status_icon <- get_state_icon(latest_state)
+      status_text <- get_state_label(latest_state)
+      
+      # Map to CSS class for backward compatibility
+      status_class <- switch(latest_state,
+        "Normal" = "status-normal",
+        "High Load" = "status-highload", 
+        "Attentional Lapse" = "status-lapse",
+        "status-normal"
+      )
+    }
+    
+    div(
+      class = paste("metric-card", status_class),
+      style = sprintf("background: linear-gradient(135deg, %s 0%%, %s 100%%);", 
+                     status_color, status_color),
+      h3(paste(status_icon, "Current Status")),
+      h2(status_text)
+    )
+  })
   
   # Lapse Probability - TEXT ONLY
   output$lapse_prob_text <- renderText({
@@ -549,6 +580,23 @@ server <- function(input, output, session) {
     sprintf("%.1f%%", lapse_prob * 100)
   })
   
+  # OLD renderUI deleted:
+  # output$lapse_prob_card <- renderUI({
+    current_data <- realtime_data()
+    if (nrow(current_data) == 0) {
+      lapse_prob <- 0
+    } else {
+      lapse_prob <- tail(current_data$lapse_prob, 1)
+    }
+    
+    thresh <- get_thresholds()
+    card_class <- if (lapse_prob > thresh$lapse_threshold) "alert-card" else "metric-card"
+    
+    div(class = card_class,
+        h3("🚨 Lapse Probability"),
+        h2(sprintf("%.1f%%", lapse_prob * 100))
+    )
+  })
   
   # Performance - TEXT ONLY  
   output$performance_text <- renderText({
@@ -559,6 +607,22 @@ server <- function(input, output, session) {
     sprintf("%.1f%%", (1 - avg_lapse_prob) * 100)
   })
   
+  # OLD renderUI deleted:
+  # output$performance_card <- renderUI({
+    current_data <- realtime_data()
+    if (nrow(current_data) == 0) {
+      perf_text <- "N/A"
+    } else {
+      recent_data <- tail(current_data, 100)
+      avg_lapse_prob <- mean(recent_data$lapse_prob, na.rm = TRUE)
+      perf_text <- sprintf("%.1f%%", (1 - avg_lapse_prob) * 100)
+    }
+    
+    div(class = "metric-card",
+        h3("📊 Performance"),
+        h2(perf_text)
+    )
+  })
   
   # Real-time Plots
   output$pupil_plot <- renderPlotly({
