@@ -40,6 +40,10 @@ ui <- shiny::navbarPage(
       .status-normal { background-color: #2ecc71; }
       .status-highload { background-color: #f39c12; }
       .status-lapse { background-color: #e74c3c; }
+      
+      /* KILL OPACITY - Disable Shiny's recalculating fade */
+      .recalculating { opacity: 1 !important; }
+      .recalculating::after { display: none !important; }
     "))
   ),
   

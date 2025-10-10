@@ -90,6 +90,12 @@ ui <- tagList(
       .status-normal { background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%); }
       .status-highload { background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); }
       .status-lapse { background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); }
+      
+      /* KILL OPACITY - Disable Shiny's recalculating fade */
+      body, .container-fluid, * { opacity: 1 !important; }
+      .recalculating { opacity: 1 !important; }
+      .recalculating::after { display: none !important; }
+      .shiny-busy { opacity: 1 !important; }
     "))
   ),
   
