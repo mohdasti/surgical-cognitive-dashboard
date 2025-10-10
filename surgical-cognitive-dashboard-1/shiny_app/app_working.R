@@ -96,6 +96,35 @@ ui <- tagList(
       .recalculating { opacity: 1 !important; }
       .recalculating::after { display: none !important; }
       .shiny-busy { opacity: 1 !important; }
+      
+      /* Kill DataTables modal/alert overlays */
+      .dataTables_processing { display: none !important; }
+      div.dt-buttons { opacity: 1 !important; }
+    ")),
+    
+    # JavaScript to clean up any modal overlays
+    tags$script(HTML("
+      // Remove any modal backdrops that get stuck
+      $(document).on('shown.bs.modal hidden.bs.modal', function() {
+        $('.modal-backdrop').remove();
+        $('body').removeClass('modal-open');
+        $('body').css('overflow', 'auto');
+      });
+      
+      // Clean up DataTables alerts
+      $(document).on('click', '.dataTables_wrapper', function() {
+        $('.modal-backdrop').remove();
+        $('body').removeClass('modal-open');  
+      });
+      
+      // Force clean on page load
+      $(document).ready(function() {
+        setTimeout(function() {
+          $('.modal-backdrop').remove();
+          $('body').removeClass('modal-open');
+          $('body').css({opacity: 1, filter: 'none'});
+        }, 100);
+      });
     "))
   ),
   
@@ -678,6 +707,7 @@ server <- function(input, output, session) {
         stringsAsFactors = FALSE
       ))
     }
+    req(nrow(current_data) > 0)  # Extra safety
     
     latest <- tail(current_data, 1)
     t_current <- latest$timestamp
@@ -800,7 +830,9 @@ server <- function(input, output, session) {
         Details = reasons
       ) %>%
       dplyr::select(Time, Alert, Details, `Lapse Prob.`, `High Load Prob.`)
-  }, options = list(pageLength = 5, dom = 'tp', ordering = FALSE), rownames = FALSE)
+  }, options = list(pageLength = 5, dom = 'tp', ordering = FALSE,
+                    paging = TRUE, searching = FALSE), 
+     rownames = FALSE, server = FALSE)  # Client-side to prevent Ajax errors
   
   # Main streaming loop - TRUE REAL-TIME SIMULATION
   observe({
