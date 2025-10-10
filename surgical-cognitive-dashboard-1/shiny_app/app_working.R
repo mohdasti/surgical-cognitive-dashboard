@@ -256,13 +256,17 @@ ui <- tagList(
   ),
   
   # ========================================================================
-  # TAB 2: TRAINING LAB
+  # TAB 2: TRAINING LAB (DISABLED - causes opacity)
   # ========================================================================
-  tabPanel("🧪 Training Lab",
-    tab_subtitle("Explore alternative threshold control strategies with scenario presets, theory-driven paradigms, and side-by-side comparison"),
-    
-    mod_experimental_controls_tab_ui("exp_controls")
-  ),
+  # Training Lab has renderPlot outputs in modules that trigger opacity
+  # when data loads. Needs deeper refactoring to work without renderUI/renderPlot.
+  # For now, disabled to maintain clean app experience.
+  #
+  # tabPanel("🧪 Training Lab",
+  #   tab_subtitle("Explore alternative threshold control strategies with scenario presets, theory-driven paradigms, and side-by-side comparison"),
+  #   
+  #   mod_experimental_controls_tab_ui("exp_controls")
+  # ),
   
   # ========================================================================
   # TAB 3: DIAGNOSTICS
@@ -299,27 +303,29 @@ server <- function(input, output, session) {
   )
   
   # Mount experimental controls module
-  experimental <- mod_experimental_controls_tab_server(
-    "exp_controls",
-    cfg = list(
-      current_time = reactive({ 
-        data <- realtime_data()
-        if (nrow(data) > 0) tail(data$timestamp, 1) / 60 else 0
-      }),
-      # Custom bounds (optional)
-      high_min = 0.40,
-      high_max = 0.80,
-      lapse_min = 0.70,
-      lapse_max = 0.95
-    ),
-    existing_thresholds = reactive({
-      list(
-        high_load_threshold = input$theta_high,
-        lapse_threshold = input$theta_lapse,
-        source = "current"
-      )
-    })
-  )
+  # DISABLED - Training Lab modules have renderPlot that cause opacity when data loads
+  # experimental <- mod_experimental_controls_tab_server(
+  #   "exp_controls",
+  #   cfg = list(
+  #     current_time = reactive({ 
+  #       data <- realtime_data()
+  #       if (nrow(data) > 0) tail(data$timestamp, 1) / 60 else 0
+  #     }),
+  #     # Custom bounds (optional)
+  #     high_min = 0.40,
+  #     high_max = 0.80,
+  #     lapse_min = 0.70,
+  #     lapse_max = 0.95
+  #   ),
+  #   existing_thresholds = reactive({
+  #     list(
+  #       high_load_threshold = input$theta_high,
+  #       lapse_threshold = input$theta_lapse,
+  #       source = "current"
+  #     )
+  #   })
+  # )
+  experimental <- NULL  # Placeholder
   
   # Create centralized threshold adapter (SINGLE SOURCE OF TRUTH)
   threshold_adapter <- create_threshold_adapter(input, experimental)
