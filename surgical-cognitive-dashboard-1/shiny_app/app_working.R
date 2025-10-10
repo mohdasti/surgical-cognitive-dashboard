@@ -459,7 +459,7 @@ server <- function(input, output, session) {
   # })
   
   # Initialize popovers for help icons
-  init_popovers(session)
+  # init_popovers(session)  # DISABLED - may cause opacity issues
   
   # ========================================================================
   # END GUIDED TOUR INTEGRATION

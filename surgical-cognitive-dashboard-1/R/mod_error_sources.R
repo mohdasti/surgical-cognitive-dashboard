@@ -222,7 +222,7 @@ mod_error_sources_ui <- function(id) {
   
   div(
     id = ns("error_panel_container"),
-    style = "display: block; transition: opacity 0.3s ease;",  # Always visible for testing
+    style = "display: none;",  # Hidden by default - only shows on alerts
     
     div(
       class = "error-sources-panel",
@@ -325,14 +325,13 @@ mod_error_sources_server <- function(id, current_state, alert_active) {
     })
     
     # Show/hide panel based on alert status
-    # DISABLED FOR TESTING - Panel is always visible now
-    # observe({
-    #   if (alert_active()) {
-    #     shinyjs::show("error_panel_container")
-    #   } else {
-    #     shinyjs::hide("error_panel_container")
-    #   }
-    # })
+    observe({
+      if (alert_active()) {
+        shinyjs::show("error_panel_container")
+      } else {
+        shinyjs::hide("error_panel_container")
+      }
+    })
     
     # Current state badge
     output$current_state_badge <- renderUI({
