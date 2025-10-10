@@ -443,7 +443,8 @@ server <- function(input, output, session) {
             )
           ),
           hr(),
-          verbatimTextOutput("calibration_stats")
+          h5("📊 Calibration Statistics"),
+          uiOutput("calibration_stats")
         )
       },
       
@@ -779,25 +780,33 @@ server <- function(input, output, session) {
     diagnostics$calibration$prob_hist_plot
   })
   
-  output$calibration_stats <- renderText({
+  output$calibration_stats <- renderUI({
     stats <- diagnostics$calibration$calib_stats_gt
-    if (is.null(stats)) return("Calibration statistics not available")
+    if (is.null(stats)) return(HTML("<p>Calibration statistics not available</p>"))
     
-    paste(
-      "Calibration Statistics (LOSO Cross-Validation):",
-      "\n",
-      capture.output(print(stats)),
-      collapse = "\n"
-    )
+    # Convert gt table to HTML
+    HTML(as.character(stats))
   })
   
   # MODEL OVERVIEW SECTION
   output$loso_confusion_matrix <- renderPlot({
-    diagnostics$loso$cm_plot
+    plot_obj <- diagnostics$loso$cm_plot
+    if (is.null(plot_obj)) {
+      plot.new()
+      text(0.5, 0.5, "Confusion matrix plot not available", cex = 1.2, col = "#666")
+      return()
+    }
+    print(plot_obj)
   })
   
   output$loso_pr_curve <- renderPlot({
-    diagnostics$loso$pr_lapse_plot
+    plot_obj <- diagnostics$loso$pr_lapse_plot
+    if (is.null(plot_obj)) {
+      plot.new()
+      text(0.5, 0.5, "Precision-Recall plot not available", cex = 1.2, col = "#666")
+      return()
+    }
+    print(plot_obj)
   })
   
   output$model_params <- renderText({
@@ -818,7 +827,26 @@ server <- function(input, output, session) {
   
   # CROSS-VALIDATION SECTION
   output$loso_summary_table <- DT::renderDT({
-    diagnostics$loso$loso_df
+    loso_data <- diagnostics$loso$loso_df
+    if (is.null(loso_data) || nrow(loso_data) == 0) {
+      return(data.frame(
+        Surgeon = character(0),
+        PR_AUC = numeric(0),
+        stringsAsFactors = FALSE
+      ))
+    }
+    
+    # Format the data nicely
+    formatted_data <- loso_data %>%
+      dplyr::rename(
+        Surgeon = holdout,
+        `PR-AUC` = pr_auc
+      ) %>%
+      dplyr::mutate(
+        `PR-AUC` = round(`PR-AUC`, 4)
+      )
+    
+    formatted_data
   }, options = list(dom = 't', ordering = FALSE, pageLength = 10), 
      rownames = FALSE, server = FALSE)
   
@@ -826,8 +854,14 @@ server <- function(input, output, session) {
   output$feature_importance_plot <- renderPlot({
     imp_data <- diagnostics$artifacts$xgb_importance_plot
     
+    if (is.null(imp_data) || nrow(imp_data) == 0) {
+      plot.new()
+      text(0.5, 0.5, "Feature importance data not available", cex = 1.2, col = "#666")
+      return()
+    }
+    
     # Create feature importance plot from data.frame
-    ggplot2::ggplot(imp_data, ggplot2::aes(x = reorder(Feature, Gain), y = Gain)) +
+    p <- ggplot2::ggplot(imp_data, ggplot2::aes(x = reorder(Feature, Gain), y = Gain)) +
       ggplot2::geom_col(fill = "#3498db") +
       ggplot2::coord_flip() +
       ggplot2::labs(
@@ -840,39 +874,118 @@ server <- function(input, output, session) {
         plot.title = ggplot2::element_text(face = "bold", hjust = 0.5),
         axis.text = ggplot2::element_text(size = 12)
       )
+    
+    print(p)
   })
   
   # PARTIAL DEPENDENCE SECTION
   output$pd_plot_1 <- renderPlot({
-    diagnostics$artifacts$pd_plots[[1]]
+    plot_obj <- diagnostics$artifacts$pd_plots[[1]]
+    if (is.null(plot_obj)) {
+      plot.new()
+      text(0.5, 0.5, "PD plot 1 not available", cex = 1.2, col = "#666")
+      return()
+    }
+    print(plot_obj)
   })
   
   output$pd_plot_2 <- renderPlot({
-    diagnostics$artifacts$pd_plots[[2]]
+    plot_obj <- diagnostics$artifacts$pd_plots[[2]]
+    if (is.null(plot_obj)) {
+      plot.new()
+      text(0.5, 0.5, "PD plot 2 not available", cex = 1.2, col = "#666")
+      return()
+    }
+    print(plot_obj)
   })
   
   output$pd_plot_3 <- renderPlot({
-    diagnostics$artifacts$pd_plots[[3]]
+    plot_obj <- diagnostics$artifacts$pd_plots[[3]]
+    if (is.null(plot_obj)) {
+      plot.new()
+      text(0.5, 0.5, "PD plot 3 not available", cex = 1.2, col = "#666")
+      return()
+    }
+    print(plot_obj)
   })
   
   # THRESHOLD SANDBOX SECTION
   # Create threshold metrics plots from data
   output$threshold_metrics_plot <- renderPlot({
-    # Placeholder for threshold sweep visualization
-    # The threshold_sandbox.rds contains a function and data
-    # For now, show a message that interactive threshold tuning would go here
-    plot.new()
-    text(0.5, 0.5, 
-         "Threshold sweep data available\nInteractive plots coming soon", 
-         cex = 1.5, col = "#666")
+    thresh_data <- diagnostics$threshold_sandbox$data
+    
+    if (is.null(thresh_data) || is.null(thresh_data$lapse_p)) {
+      plot.new()
+      text(0.5, 0.5, "Threshold sweep data not available", cex = 1.2, col = "#666")
+      return()
+    }
+    
+    # Create histogram of lapse probabilities
+    hist(thresh_data$lapse_p, 
+         breaks = 50, 
+         main = "Distribution of Lapse Probabilities\n(Threshold Sweep Data)",
+         xlab = "Lapse Probability",
+         ylab = "Frequency",
+         col = "#3498db",
+         border = "white")
+    
+    # Add current threshold lines
+    abline(v = 0.30, col = "red", lwd = 2, lty = 2)
+    text(0.30, par("usr")[4] * 0.8, "Current\nLapse Threshold\n(0.30)", 
+         col = "red", pos = 2, cex = 0.8)
   })
   
   output$threshold_f1_plot <- renderPlot({
-    # Placeholder for F1 score vs threshold
-    plot.new()
-    text(0.5, 0.5, 
-         "F1 vs Threshold plot\nData available in threshold_sandbox.rds", 
-         cex = 1.5, col = "#666")
+    thresh_data <- diagnostics$threshold_sandbox$data
+    
+    if (is.null(thresh_data) || is.null(thresh_data$lapse_p) || is.null(thresh_data$lab_bin)) {
+      plot.new()
+      text(0.5, 0.5, "Threshold performance data not available", cex = 1.2, col = "#666")
+      return()
+    }
+    
+    # Create ROC-style plot showing threshold vs performance
+    thresholds <- seq(0.1, 0.9, 0.05)
+    sensitivity <- numeric(length(thresholds))
+    specificity <- numeric(length(thresholds))
+    
+    for (i in seq_along(thresholds)) {
+      pred_binary <- as.numeric(thresh_data$lapse_p > thresholds[i])
+      conf_matrix <- table(thresh_data$lab_bin, pred_binary)
+      
+      if (nrow(conf_matrix) == 2 && ncol(conf_matrix) == 2) {
+        tp <- conf_matrix[2, 2]
+        fn <- conf_matrix[2, 1]
+        fp <- conf_matrix[1, 2]
+        tn <- conf_matrix[1, 1]
+        
+        sensitivity[i] <- tp / (tp + fn)
+        specificity[i] <- tn / (tn + fp)
+      } else {
+        sensitivity[i] <- NA
+        specificity[i] <- NA
+      }
+    }
+    
+    # Plot sensitivity vs 1-specificity (ROC curve)
+    plot(1 - specificity, sensitivity, 
+         type = "l", 
+         lwd = 2, 
+         col = "#e74c3c",
+         main = "ROC Curve (Lapse Detection)\nThreshold Performance",
+         xlab = "1 - Specificity (False Positive Rate)",
+         ylab = "Sensitivity (True Positive Rate)",
+         xlim = c(0, 1), ylim = c(0, 1))
+    
+    # Add diagonal line
+    abline(0, 1, col = "gray", lty = 2)
+    
+    # Mark current threshold
+    current_fpr <- 1 - specificity[which.min(abs(thresholds - 0.30))]
+    current_tpr <- sensitivity[which.min(abs(thresholds - 0.30))]
+    points(current_fpr, current_tpr, pch = 19, col = "red", cex = 1.5)
+    text(current_fpr, current_tpr + 0.05, "Current\nThreshold", 
+         col = "red", pos = 3, cex = 0.8)
   })
   
   # Alert Log
