@@ -3,7 +3,7 @@ library(bslib)
 library(plotly)
 library(DT)
 library(shinyjs)
-library(cicerone)
+# library(cicerone)  # DISABLED - causes opacity overlay
 
 # Load the setup
 source("../scripts/00_setup.R")
@@ -62,8 +62,7 @@ ui <- tagList(
     # Add custom CSS for better styling
     tags$head(
       tags$style(HTML("
-      /* Add padding to body to account for fixed banner */
-      body { padding-top: 60px !important; }
+      /* Padding removed - no banner in this version */
       
       .metric-card { 
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
