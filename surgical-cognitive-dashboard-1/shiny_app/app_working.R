@@ -284,14 +284,24 @@ server <- function(input, output, session) {
   
   # Load pre-computed diagnostic artifacts
   diagnostics <- tryCatch({
+    # Check if files exist and use correct path
+    base_path <- if (dir.exists("../data/diagnostics")) "../data/diagnostics" else "data/diagnostics"
+    
+    cat("Loading diagnostics from:", base_path, "\n")
+    cat("  - calibration.rds exists:", file.exists(file.path(base_path, "calibration.rds")), "\n")
+    cat("  - loso_eval.rds exists:", file.exists(file.path(base_path, "loso_eval.rds")), "\n")
+    cat("  - model_artifacts.rds exists:", file.exists(file.path(base_path, "model_artifacts.rds")), "\n")
+    cat("  - threshold_sandbox.rds exists:", file.exists(file.path(base_path, "threshold_sandbox.rds")), "\n")
+    
     list(
-      calibration = readRDS("data/diagnostics/calibration.rds"),
-      loso = readRDS("data/diagnostics/loso_eval.rds"),
-      artifacts = readRDS("data/diagnostics/model_artifacts.rds"),
-      threshold_sandbox = readRDS("data/diagnostics/threshold_sandbox.rds")
+      calibration = readRDS(file.path(base_path, "calibration.rds")),
+      loso = readRDS(file.path(base_path, "loso_eval.rds")),
+      artifacts = readRDS(file.path(base_path, "model_artifacts.rds")),
+      threshold_sandbox = readRDS(file.path(base_path, "threshold_sandbox.rds"))
     )
   }, error = function(e) {
     cat("ERROR loading diagnostic data:", e$message, "\n")
+    cat("Current working directory:", getwd(), "\n")
     # Return empty structure to prevent crashes
     list(
       calibration = list(calib_plot = NULL, prob_hist_plot = NULL, calib_stats_gt = NULL),
