@@ -140,30 +140,29 @@ ui <- tagList(
   # TAB 1: LIVE MONITOR
   # ========================================================================
   tabPanel("🏥 Live Monitor",
-    tab_subtitle("Real-time HUD at 5 Hz with biosignal monitoring, cognitive state classification, and actionable alerts"),
     
     fluidRow(
       column(3,
         wellPanel(
-          h4("🎛️ Control Panel"),
+          h4("⚙️ Control Panel"),
           
-          checkboxInput("silent", "🔇 Silent mode", FALSE),
+          checkboxInput("silent", "Silent mode", FALSE),
           helpText(style = "font-size: 0.85em; color: #666; margin-top: -10px;",
             "Suppress alert notifications"),
           
-            hr(),
-            h5("⚙️ Alert Thresholds"),
-            sliderInput("theta_lapse", "🚨 Lapse threshold", 0, 1, 0.3, 0.01),
-          sliderInput("theta_high", "⚠️ High-load threshold", 0, 1, 0.6, 0.01),
+          hr(),
+          h5("Alert Thresholds"),
+          sliderInput("theta_lapse", "Lapse threshold", 0, 1, 0.3, 0.01),
+          sliderInput("theta_high", "High-load threshold", 0, 1, 0.6, 0.01),
           
           hr(),
-          h5("📊 Display Options"),
-          checkboxInput("show_features", "🔬 Show feature values", value = TRUE),
+          h5("Display Options"),
+          checkboxInput("show_features", "Show feature values", value = TRUE),
           helpText(style = "font-size: 0.85em; color: #666; margin-top: -10px;",
             "Toggle 57-feature biosignal table"),
           
           hr(),
-          actionButton("reset_session", "🔄 Reset Session", class = "btn-warning")
+          actionButton("reset_session", "Reset Session", class = "btn-warning")
         )
       ),
       column(9,
