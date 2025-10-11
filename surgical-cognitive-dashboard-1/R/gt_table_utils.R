@@ -86,8 +86,8 @@ status_icon_html <- function(status) {
 
 # ---------- Effect size ----------
 effect_size_d <- function(val, mean0, sd0) {
-  if (is.na(sd0) || sd0 <= 0) return(NA_real_)
-  (val - mean0) / sd0
+  # Vectorized version - handle NA and zero SD
+  ifelse(is.na(sd0) | sd0 <= 0, NA_real_, (val - mean0) / sd0)
 }
 
 # ---------- Color palette helper ----------
