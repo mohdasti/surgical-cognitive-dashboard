@@ -139,33 +139,12 @@ ui <- tagList(
         wellPanel(
           h4("🎛️ Control Panel"),
           
-          # Experimental controls toggle
-          checkboxInput("use_experimental", "🧪 Use Training Lab Controls", FALSE),
-          helpText(style = "font-size: 0.85em; color: #666;",
-            "When enabled, thresholds come from the Training Lab tab"),
-          
-          conditionalPanel(
-            condition = "!input.use_experimental",
-            hr(),
-            checkboxInput("silent", "🔇 Silent mode", FALSE),
-            checkboxInput("enable_logging", "📝 Enable logging", TRUE),
-            hr(),
-            h5("⚙️ Alert Thresholds"),
-            sliderInput("theta_lapse", "🚨 Lapse threshold", 0, 1, 0.3, 0.01),
-            sliderInput("theta_high", "⚠️ High-load threshold", 0, 1, 0.6, 0.01)
-          ),
-          conditionalPanel(
-            condition = "input.use_experimental",
-            hr(),
-            checkboxInput("silent", "🔇 Silent mode", FALSE),
-            checkboxInput("enable_logging", "📝 Enable logging", TRUE),
-            hr(),
-            div(style = "background: #e8f5e9; padding: 10px; border-radius: 5px; border-left: 3px solid #4caf50;",
-              p(style = "margin: 0; font-size: 0.9em;",
-                icon("check-circle"), " Thresholds are controlled by the ",
-                strong("Training Lab tab"))
-            )
-          ),
+          checkboxInput("silent", "🔇 Silent mode", FALSE),
+          checkboxInput("enable_logging", "📝 Enable logging", TRUE),
+          hr(),
+          h5("⚙️ Alert Thresholds"),
+          sliderInput("theta_lapse", "🚨 Lapse threshold", 0, 1, 0.3, 0.01),
+          sliderInput("theta_high", "⚠️ High-load threshold", 0, 1, 0.6, 0.01),
           hr(),
           h5("📊 Display Options"),
           checkboxInput("show_features", "🔬 Show feature values", value = TRUE),
