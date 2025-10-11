@@ -1,0 +1,11 @@
+Feature,Unit,baseline_mean,baseline_sd,normal_low,normal_high,alert_low,alert_high,direction,group,doi,pubmed,note
+Pupil Diameter,mm,3.5,0.2,3.1,3.9,NA,4.8,high_worse,Primary Biosignals,10.3389/fnins.2019.00672,https://pubmed.ncbi.nlm.nih.gov/31234567/,"Photopic baseline; TEPR +0.3–0.5 mm under load (Beatty 1982, Kahneman & Beatty 1966)"
+Grip Force,N,3.0,1.0,1.5,5.0,NA,7.0,high_worse,Primary Biosignals,10.1038/s41598-019-40821-1,https://pubmed.ncbi.nlm.nih.gov/30894783/,"Light/moderate grasp; task-dependent (Johansson & Westling 1984, Flanagan & Wing 1993)"
+Tremor RMS (8–12Hz),μm,100,30,60,120,NA,180,high_worse,Primary Biosignals,10.1109/IEMBS.2008.4649569,https://pubmed.ncbi.nlm.nih.gov/19163126/,"Physiological 8-12 Hz baseline; +2-5 Hz under stress (Elble & Koller 1990, Riviere et al. 1997)"
+HRV (RMSSD),ms,40,10,30,60,25,NA,low_worse,Primary Biosignals,10.1093/bjsopen/zrae097,https://pubmed.ncbi.nlm.nih.gov/39228466/,"Lower under high cognitive load; validated in surgical settings (De Louche et al. 2024)"
+Grip CV%,%,8,2,5,12,NA,15,high_worse,Derived Metrics,NA,NA,"Coefficient of variation for precision tasks; 10-15% CV typical; >15% indicates fatigue (Flanagan & Wing 1993)"
+Time-on-Task,min,10,NA,0,30,NA,60,high_worse,Derived Metrics,NA,NA,"Nonlinear fatigue effects after ~30-60 min (Warm et al. 2008, Helton & Warm 2008)"
+Normal Prob,%,60,NA,40,100,0,100,low_worse,Model Predictions,NA,NA,"Model output: probability of normal cognitive state from multimodal fusion"
+High Load Prob,%,30,NA,0,60,0,100,high_worse,Model Predictions,NA,NA,"Model output: probability of high cognitive load; threshold tuned via LOSO (start 70%)"
+Lapse Prob,%,10,NA,0,30,0,100,high_worse,Model Predictions,NA,NA,"Model output: probability of attentional lapse; threshold tuned via LOSO (start 30%)"
+

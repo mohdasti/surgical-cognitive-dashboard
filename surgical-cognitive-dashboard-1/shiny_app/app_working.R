@@ -24,6 +24,8 @@ source("../R/threshold_adapter.R")
 source("../R/ui_banner.R")
 source("../R/mod_compare_drawer.R")
 source("../R/mod_guided_tour.R")
+source("../R/gt_table_utils.R")
+source("../R/mod_gt_live_table.R")
 
 ui <- tagList(
   # Initialize shinyjs
@@ -323,11 +325,10 @@ ui <- tagList(
           )
         ),
         
-        # Feature Values Table
+        # Feature Values Table (GT version with literature ranges)
         conditionalPanel(
           condition = "input.show_features",
-          h4("Real-time Feature Values"),
-          DT::dataTableOutput("features_table")
+          gt_live_table_ui("gtlive", title = "Real-time Feature Values")
         ),
         
         # Alert Log
@@ -838,58 +839,99 @@ server <- function(input, output, session) {
              margin = list(b = 100, t = 50, l = 50, r = 50))
   })
   
-  # Features Table
-  output$features_table <- DT::renderDT({
+  # ========================================================================
+  # GT LIVE TABLE INTEGRATION
+  # ========================================================================
+  
+  # Build features_reactive for current window
+  features_reactive <- reactive({
     current_data <- realtime_data()
     if (nrow(current_data) == 0) {
-      # Return empty table with proper structure
-      return(data.frame(
-        Metric = character(0),
-        Value = character(0),
-        Reference = character(0),
-        stringsAsFactors = FALSE
+      return(tibble::tibble(
+        Feature = character(0),
+        Value = numeric(0),
+        Unit = character(0)
       ))
     }
-    req(nrow(current_data) > 0)  # Extra safety
     
     latest <- tail(current_data, 1)
     t_current <- latest$timestamp
     fatigue_min <- t_current / 60
+    grip_cv_pct <- (0.08 + (0.04 * min(1, fatigue_min / 30))) * 100
     
-    features_df <- data.frame(
-      Feature = c("Pupil Diameter (mm)", 
-                  "Grip Force (N)", 
-                  "Grip CV (%)",
-                  "Tremor RMS (μm)", 
-                  "Time-on-Task (min)",
-                  "Normal Prob", 
-                  "High Load Prob", 
-                  "Lapse Prob"),
+    # Note: HRV not in simulation yet, using placeholder
+    hrv_rmssd_ms <- 40  # Placeholder until HRV added to simulation
+    
+    tibble::tibble(
+      Feature = c("Pupil Diameter", "Grip Force", "Tremor RMS (8–12Hz)", 
+                  "HRV (RMSSD)", "Grip CV%", "Time-on-Task",
+                  "Normal Prob", "High Load Prob", "Lapse Prob"),
       Value = c(
-        sprintf("%.2f", latest$pupil_diameter),
-        sprintf("%.2f", latest$grip_force),
-        sprintf("%.1f", (0.08 + (0.04 * min(1, fatigue_min / 30))) * 100),
-        sprintf("%.1f", latest$tremor_amplitude),
-        sprintf("%.1f", fatigue_min),
-        sprintf("%.3f", latest$state_probs_normal),
-        sprintf("%.3f", latest$state_probs_highload),
-        sprintf("%.3f", latest$state_probs_lapse)
+        latest$pupil_diameter,
+        latest$grip_force,
+        latest$tremor_amplitude,
+        hrv_rmssd_ms,
+        grip_cv_pct,
+        fatigue_min,
+        latest$state_probs_normal * 100,
+        latest$state_probs_highload * 100,
+        latest$state_probs_lapse * 100
       ),
-      Reference = c(
-        "Wu 2019: 3.5±0.2mm baseline",
-        "Araki 2021: 4.5N baseline",
-        "Fresh: 8%, Fatigued: 12%",
-        "Wells 2013: 60-120μm RMS",
-        "Tremor +12%/hour",
-        "Multimodal fusion",
-        "De Louche 2024 (HRV)",
-        "Wu 2019 (pupil)"
+      Unit = c("mm", "N", "μm", "ms", "%", "min", "%", "%", "%")
+    )
+  })
+  
+  # Build trends_reactive over last N windows for sparklines
+  trends_reactive <- reactive({
+    current_data <- realtime_data()
+    if (nrow(current_data) == 0) {
+      return(tibble::tibble(
+        Feature = character(0),
+        Trend = list()
+      ))
+    }
+    
+    # Last 60 data points (12 seconds at 5Hz) for sparklines
+    hf <- current_data %>%
+      dplyr::arrange(timestamp) %>%
+      tail(60)
+    
+    # Calculate grip CV for each row
+    grip_cv_vec <- sapply(hf$timestamp, function(t) {
+      fatigue_min <- t / 60
+      (0.08 + (0.04 * min(1, fatigue_min / 30))) * 100
+    })
+    
+    # Placeholder HRV trend
+    hrv_trend <- rep(40, nrow(hf))
+    
+    tibble::tibble(
+      Feature = c("Pupil Diameter", "Grip Force", "Tremor RMS (8–12Hz)", 
+                  "HRV (RMSSD)", "Grip CV%", "Time-on-Task",
+                  "Normal Prob", "High Load Prob", "Lapse Prob"),
+      Trend = list(
+        hf$pupil_diameter,
+        hf$grip_force,
+        hf$tremor_amplitude,
+        hrv_trend,
+        grip_cv_vec,
+        hf$timestamp / 60,
+        hf$state_probs_normal * 100,
+        hf$state_probs_highload * 100,
+        hf$state_probs_lapse * 100
       )
     )
-    
-    features_df
-  }, options = list(dom = 't', ordering = FALSE, paging = FALSE), 
-     rownames = FALSE, server = FALSE)  # Client-side to prevent Ajax errors
+  })
+  
+  # Mount GT live table module
+  gt_live_table_server(
+    "gtlive",
+    features_reactive = features_reactive,
+    trends_reactive = trends_reactive,
+    params_reactive = reactive({ CFG }),  # Use config for params
+    personal_reactive = reactive({ NULL }),  # Can add personal baselines later
+    refs_path = "../data/reference_ranges.csv"
+  )
   
   # ========================================================================
   # DIAGNOSTIC PLOTS - REAL DATA FROM .RDS FILES
