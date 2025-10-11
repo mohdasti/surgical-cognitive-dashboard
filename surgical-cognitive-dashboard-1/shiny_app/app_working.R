@@ -216,7 +216,7 @@ ui <- tagList(
           ),
           fluidRow(
             column(6, plotlyOutput("tremor_plot", height = "300px")),
-            column(6, plotlyOutput("state_prob_plot", height = "300px"))
+            column(6, plotlyOutput("state_prob_plot", height = "350px"))
           )
         ),
         
