@@ -1,4 +1,4 @@
-# Surgical Cognitive Dashboard 🧠
+# Surgical Cognitive Dashboard
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Status: Research Prototype](https://img.shields.io/badge/Status-Research_Prototype-blue.svg)](https://github.com/mohdasti/surgical-cognitive-dashboard)
@@ -6,7 +6,7 @@
 [![Shiny App](https://img.shields.io/badge/Shiny-App-blue?logo=rstudio)](https://shiny.rstudio.com/)
 [![Evidence-Based](https://img.shields.io/badge/Evidence-Based-green.svg)](BIOSIGNAL_EVIDENCE_SUMMARY.md)
 
-A real-time surgical cognitive monitoring system with evidence-based biosignal simulation, comprehensive ML diagnostics, and interactive visualization. Features literature-validated parameters from 16 peer-reviewed studies.
+A **professional, enterprise-grade** real-time surgical cognitive monitoring system with evidence-based biosignal simulation, comprehensive ML diagnostics, and clinical-quality visualization. Features literature-validated parameters from 16 peer-reviewed studies and full model interpretability.
 
 **➡️ [Run Locally](#-getting-started)** | **[View Evidence Summary](BIOSIGNAL_EVIDENCE_SUMMARY.md)**
 
@@ -17,11 +17,12 @@ A real-time surgical cognitive monitoring system with evidence-based biosignal s
 This project addresses a critical challenge in patient safety: how can we proactively monitor a surgeon's cognitive state to mitigate the risks of fatigue and overload? The system implements a comprehensive machine learning pipeline with strict causal feature engineering to ensure real-time applicability.
 
 **Key Innovations:**
+- **Professional Interface**: Clinical-grade UI with CSS animations and purposeful visual indicators
 - **Causal Feature Engineering**: Strictly causal features with no future data leakage
 - **LOSO Cross-Validation**: Leave-One-Surgeon-Out validation for generalizability
 - **Anomaly Fusion**: Isolation Forest for detecting rare attentional lapses
 - **Real-time Calibration**: Platt scaling for reliable probability estimates
-- **Comprehensive Diagnostics**: Full model explainability and threshold tuning
+- **Comprehensive Diagnostics**: Full model explainability, threshold tuning, and performance analysis
 
 ![A mockup of a surgical console screen displaying a time-series plot of the surgeon's pupil dilation and grip force variability, indicating their cognitive state during a procedure.](case_study/images/surgical_console_enhanced.png)
 
@@ -29,19 +30,36 @@ This project addresses a critical challenge in patient safety: how can we proact
 
 ## ✨ Key Features
 
-* 🎯 **Evidence-Based Simulation:** Multi-component biosignal generation with parameters from 16 peer-reviewed studies
-* ⏱️ **Real-Time Streaming:** 10-minute surgical simulation with 5Hz updates (200ms intervals) and live clock
-* 📊 **Interactive Visualizations:** 
+### **Two Integrated Modules:**
+
+#### **1. Live Monitor (Real-Time Streaming Dashboard)**
+* **Evidence-Based Simulation:** Multi-component biosignal generation with parameters from 16 peer-reviewed studies
+* **Real-Time Streaming:** 10-minute surgical simulation with 5Hz updates (200ms intervals) and live clock
+* **Interactive Visualizations:** 
     * Pupil diameter tracking with tonic/phasic responses
     * Grip force variability with micro-movements and fatigue
     * Tremor amplitude with stress-modulated components
-    * True stacked probability chart with smoothed state transitions
-* 🧠 **Cognitive State Detection:**
-    * Normal operating state
-    * High cognitive load (70-90% threshold)
-    * Attentional lapse detection (60% threshold)
-* 📈 **Real-Time Feature Table:** Live metrics with literature references and physiological indicators
-* 🎨 **Professional Medical UI:** Status cards, dynamic alerts, and responsive layout
+    * Cognitive state distribution with smoothed state transitions
+* **Cognitive State Detection:**
+    * Normal operating state (green indicator)
+    * High cognitive load detection (orange indicator)
+    * Attentional lapse detection (red indicator with urgent animation)
+* **Professional Interface:** 
+    * CSS-animated status indicators (attention-appropriate speeds)
+    * Pulsing LIVE indicator with glow effect
+    * Clean, emoji-free design suitable for clinical environments
+    * Responsive layout with centered, professional typography
+
+#### **2. ML Model Diagnostics (Comprehensive Performance Analysis)**
+* **6 Progressive Disclosure Sections:**
+    1. **Threshold Sandbox:** Interactive threshold tuning with real-time precision-recall tradeoffs
+    2. **Probability Calibration:** Reliability analysis with ECE/MCE metrics and Brier scores
+    3. **Model Overview:** Architecture, hyperparameters, confusion matrices, and PR curves
+    4. **Cross-Validation Results:** LOSO evaluation with per-surgeon performance metrics
+    5. **Feature Importance:** XGBoost gain-based importance rankings
+    6. **Partial Dependence:** Marginal effect plots showing feature-prediction relationships
+* **Real Data Integration:** All diagnostics use actual LOSO cross-validation results
+* **Professional Accordion UI:** Expandable sections with high-impact sections prioritized
 
 ---
 
@@ -124,26 +142,50 @@ This project addresses a critical challenge in patient safety: how can we proact
 
 📖 **Full methodology with 16 citations:** [BIOSIGNAL_EVIDENCE_SUMMARY.md](BIOSIGNAL_EVIDENCE_SUMMARY.md)
 
-## 📊 Real-Time Dashboard Features
+## 📊 Machine Learning Pipeline
 
-### **Live Monitoring (5Hz Updates):**
-- ⏱️ **Simulation Clock:** MM:SS elapsed time with progress bar
-- 🎯 **Current State:** Dynamic status card with color coding
-- 📊 **State Probabilities:** Real-time percentage display
-- 🚨 **Alert System:** Automatic notifications for state changes
+### **Complete ML Diagnostics Workflow:**
 
-### **Interactive Plots:**
-1. **Pupil Diameter (mm):** Literature-validated tonic/phasic responses
-2. **Grip Force (N):** Real-time variability with micro-movements
-3. **Tremor Amplitude (μm):** Stress-modulated 8-12 Hz oscillations
-4. **Cognitive State Distribution:** True stacked probability chart (sums to 100%)
+#### **1. Data Generation (`scripts/01_simulate_data.R`)**
+- Multi-component biosignal synthesis with literature-validated parameters
+- Cognitive state simulation with realistic transitions
+- 10-minute segments at 5Hz sampling rate
 
-### **Feature Table:**
-- **Pupil Baseline:** 30-second rolling mean
-- **Grip CV (%):** Coefficient of variation (micro-movement indicator)
-- **Tremor Frequency:** Mean Hz over observation window
-- **Time-on-Task:** Elapsed minutes (fatigue proxy)
-- **Literature References:** Embedded citations for each metric
+#### **2. Feature Engineering (`scripts/02_feature_engineering.R`)**
+- **57 causal features** extracted with strict temporal constraints
+- Rolling window statistics (mean, SD, CV, entropy)
+- Spectral features (FFT, dominant frequencies)
+- Time-on-task and fatigue indicators
+- No future data leakage (production-ready)
+
+#### **3. Model Training (`scripts/03_train_model.R`, `03b_lapse_detector.R`)**
+- **XGBoost multi-class classifier** for state prediction
+- **Isolation Forest** for rare lapse detection (anomaly fusion)
+- **Platt scaling** for probability calibration
+- Hyperparameter tuning with cross-validation
+
+#### **4. LOSO Evaluation (`scripts/04_eval_LOSO.R`)**
+- **Leave-One-Surgeon-Out** cross-validation
+- Per-surgeon performance metrics (PR-AUC)
+- Confusion matrices and precision-recall curves
+- Generalization assessment across individuals
+
+#### **5. Model Interpretability (`scripts/03c_explain_and_pd.R`)**
+- **SHAP values** for feature importance
+- **Partial dependence plots** showing feature effects
+- **Feature importance rankings** (gain-based)
+
+#### **6. Diagnostic Export (`scripts/05_diagnostics_export.R`)**
+- **Threshold analysis:** Precision-recall tradeoffs
+- **Calibration analysis:** ECE, MCE, Brier scores
+- **Model artifacts:** Plots and tables for dashboard
+- All diagnostics saved as `.rds` files for real-time loading
+
+### **Real-Time Dashboard Integration:**
+- **Live Monitor:** Streams simulated data at 5Hz with state predictions
+- **ML Diagnostics:** Loads pre-computed diagnostics for instant access
+- **Interactive threshold tuning:** Explore performance at different decision boundaries
+- **Full transparency:** Every metric linked to training/validation results
 
 ---
 
@@ -197,25 +239,51 @@ The repository includes multiple app versions for reference:
 
 ## 💻 Dashboard Interface
 
-### **📊 Main Dashboard Tab**
-- **Status Cards:** Real-time state display with color-coded indicators
-  - 🟢 Normal (green) - Stable operation
-  - 🟡 High Load (yellow) - Elevated cognitive demand  
-  - 🔴 Lapse (red) - Attention deficit detected
+### **Live Monitor Tab**
+- **Status Cards:** Real-time state display with animated CSS indicators
+  - Green dot (slow pulse) - Normal operation
+  - Orange dot (warning flash) - High cognitive load
+  - Red dot (urgent pulse) - Attentional lapse detected
+- **LIVE Indicator:** Pulsing red dot with glow effect shows real-time streaming
 - **Live Clock:** Elapsed time (MM:SS), duration, progress percentage
 - **Real-Time Plots:**
-  - Pupil diameter with tonic/phasic components
-  - Grip force with micro-movements and fatigue
-  - Tremor amplitude (0-100 μm range)
-  - Cognitive state distribution (true stacked probabilities)
-- **Feature Metrics:** Live table with literature citations
+  - Pupil Diameter (photopic, TEPR)
+  - Grip Force (da Vinci robotic instruments)
+  - Tremor Amplitude (8-12 Hz, μm)
+  - Cognitive State Distribution (stacked probabilities)
+- **Feature Metrics:** Live table with literature citations (toggleable)
 - **Alert System:** Automatic notifications on state transitions
+- **Control Panel:** Silent mode, adjustable thresholds, display options
 
-### **🎨 Visualization Features**
-- ✅ **Smoothed Transitions:** 10-point rolling average for probability chart
-- ✅ **Accurate Tooltips:** Individual probabilities (not cumulative)
-- ✅ **Professional Styling:** Medical dashboard aesthetic with `shinydashboard`
+### **ML Model Diagnostics Tab**
+- **Threshold Sandbox:**
+  - Distribution of lapse probabilities histogram
+  - Precision-Recall tradeoff curve with optimal threshold
+  - Dynamic threshold range based on actual data
+- **Probability Calibration:**
+  - Calibration plot (predicted vs. observed)
+  - Probability distribution histogram
+  - Calibration statistics (ECE, MCE, Brier Score)
+- **Model Overview:**
+  - LOSO confusion matrix
+  - Precision-Recall curve for lapse detection
+  - Model hyperparameters display
+- **Cross-Validation Results:**
+  - Per-surgeon PR-AUC metrics
+  - LOSO validation summary table
+- **Feature Importance:**
+  - XGBoost gain-based importance barplot
+  - Ranked feature contributions
+- **Partial Dependence:**
+  - Marginal effect plots for top 3 features
+  - Feature-prediction relationship visualization
+
+### **Professional Design Features**
+- ✅ **CSS Animations:** Purposeful, attention-appropriate indicator speeds
+- ✅ **Emoji-Free:** Clean, professional typography throughout
+- ✅ **Clinical-Grade:** Suitable for academic presentations and publications
 - ✅ **Responsive Layout:** Adapts to different screen sizes
+- ✅ **Progressive Disclosure:** Accordion-style diagnostics prioritized by impact
 
 ---
 
