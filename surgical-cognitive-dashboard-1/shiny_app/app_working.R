@@ -817,31 +817,23 @@ server <- function(input, output, session) {
     )
   }, striped = TRUE, hover = TRUE, bordered = TRUE)
   
-  # MODEL OVERVIEW SECTION - SIMPLE TEST VERSION
+  # MODEL OVERVIEW SECTION - MINIMAL TEST
   output$loso_confusion_matrix <- renderPlot({
-    # Create a simple test confusion matrix using base R
-    mat <- matrix(c(45, 8, 2, 5, 12, 3, 1, 2, 8), nrow = 3, byrow = TRUE)
-    
-    # Simple barplot representation
-    barplot(mat, beside = TRUE, 
-            names.arg = c("Normal", "High Load", "Lapse"),
-            main = "LOSO Confusion Matrix (Test)",
-            xlab = "True Class", ylab = "Count",
-            col = c("#2ecc71", "#f39c12", "#e74c3c"),
-            legend = TRUE, args.legend = list(x = "topright"))
-    text(6, 40, "Test Plot Working!", col = "darkgreen", cex = 1.2)
+    # Use the exact same plot that works
+    plot(1:10, rnorm(10), main = "LOSO Confusion Matrix (Test)", 
+         xlab = "Expected Probability", ylab = "Observed Probability",
+         pch = 19, col = "#3498db")
+    abline(0, 1, col = "red", lwd = 2)
+    text(8, 0.5, "Test Plot Working!", col = "darkgreen", cex = 1.2)
   })
   
   output$loso_pr_curve <- renderPlot({
-    # Create a simple test PR curve
-    recall <- seq(0, 1, 0.1)
-    precision <- 0.8 + 0.2 * recall - 0.1 * recall^2
-    
-    plot(recall, precision, type = "l", lwd = 3, col = "#e74c3c",
-         main = "Precision-Recall Curve (Test)",
-         xlab = "Recall", ylab = "Precision",
-         xlim = c(0, 1), ylim = c(0, 1))
-    text(0.5, 0.9, "Test Plot Working!", col = "darkgreen", cex = 1.2)
+    # Use the exact same plot that works
+    plot(1:10, rnorm(10), main = "Precision-Recall Curve (Test)", 
+         xlab = "Expected Probability", ylab = "Observed Probability",
+         pch = 19, col = "#3498db")
+    abline(0, 1, col = "red", lwd = 2)
+    text(8, 0.5, "Test Plot Working!", col = "darkgreen", cex = 1.2)
   })
   
   output$model_params <- renderText({
@@ -872,45 +864,42 @@ server <- function(input, output, session) {
     )
   }, striped = TRUE, hover = TRUE, bordered = TRUE, digits = 4)
   
-  # FEATURE IMPORTANCE SECTION - SIMPLE TEST VERSION
+  # FEATURE IMPORTANCE SECTION - MINIMAL TEST
   output$feature_importance_plot <- renderPlot({
-    # Create a simple test feature importance plot
-    features <- c("Pupil Diameter", "Grip Force", "Tremor", "Blink Rate", "Heart Rate")
-    importance <- c(0.35, 0.25, 0.20, 0.15, 0.05)
-    
-    barplot(importance, names.arg = features, horiz = TRUE,
-            main = "Feature Importance (Test)",
-            xlab = "Importance (Gain)",
-            col = "#3498db", border = "white")
-    text(0.15, 3, "Test Plot Working!", col = "darkgreen", cex = 1.2)
+    # Use the exact same plot that works
+    plot(1:10, rnorm(10), main = "Feature Importance (Test)", 
+         xlab = "Expected Probability", ylab = "Observed Probability",
+         pch = 19, col = "#3498db")
+    abline(0, 1, col = "red", lwd = 2)
+    text(8, 0.5, "Test Plot Working!", col = "darkgreen", cex = 1.2)
   })
   
-  # PARTIAL DEPENDENCE SECTION - SIMPLE TEST VERSION
+  # PARTIAL DEPENDENCE SECTION - MINIMAL TEST
   output$pd_plot_1 <- renderPlot({
-    x <- seq(2.5, 5.0, 0.1)
-    y <- 0.1 + 0.2 * sin(x - 3.5) + rnorm(length(x), 0, 0.05)
-    plot(x, y, type = "l", lwd = 2, col = "#3498db",
-         main = "Pupil Diameter PD (Test)",
-         xlab = "Pupil Diameter (mm)", ylab = "Lapse Probability")
-    text(3.5, 0.25, "Test Plot Working!", col = "darkgreen", cex = 1.0)
+    # Use the exact same plot that works
+    plot(1:10, rnorm(10), main = "Pupil Diameter PD (Test)", 
+         xlab = "Expected Probability", ylab = "Observed Probability",
+         pch = 19, col = "#3498db")
+    abline(0, 1, col = "red", lwd = 2)
+    text(8, 0.5, "Test Plot Working!", col = "darkgreen", cex = 1.2)
   })
   
   output$pd_plot_2 <- renderPlot({
-    x <- seq(1, 10, 0.2)
-    y <- 0.05 + 0.15 * exp(-(x-4.5)^2/4) + rnorm(length(x), 0, 0.03)
-    plot(x, y, type = "l", lwd = 2, col = "#e74c3c",
-         main = "Grip Force PD (Test)",
-         xlab = "Grip Force (N)", ylab = "Lapse Probability")
-    text(6, 0.18, "Test Plot Working!", col = "darkgreen", cex = 1.0)
+    # Use the exact same plot that works
+    plot(1:10, rnorm(10), main = "Grip Force PD (Test)", 
+         xlab = "Expected Probability", ylab = "Observed Probability",
+         pch = 19, col = "#3498db")
+    abline(0, 1, col = "red", lwd = 2)
+    text(8, 0.5, "Test Plot Working!", col = "darkgreen", cex = 1.2)
   })
   
   output$pd_plot_3 <- renderPlot({
-    x <- seq(0, 150, 2)
-    y <- 0.02 + 0.08 * (x/150)^2 + rnorm(length(x), 0, 0.02)
-    plot(x, y, type = "l", lwd = 2, col = "#f39c12",
-         main = "Tremor Amplitude PD (Test)",
-         xlab = "Tremor (μm)", ylab = "Lapse Probability")
-    text(75, 0.08, "Test Plot Working!", col = "darkgreen", cex = 1.0)
+    # Use the exact same plot that works
+    plot(1:10, rnorm(10), main = "Tremor Amplitude PD (Test)", 
+         xlab = "Expected Probability", ylab = "Observed Probability",
+         pch = 19, col = "#3498db")
+    abline(0, 1, col = "red", lwd = 2)
+    text(8, 0.5, "Test Plot Working!", col = "darkgreen", cex = 1.2)
   })
   
   # THRESHOLD SANDBOX SECTION - SIMPLE TEST VERSION
