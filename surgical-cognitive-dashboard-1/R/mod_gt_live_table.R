@@ -26,12 +26,23 @@ gt_live_table_server <- function(id, features_reactive, trends_reactive = NULL, 
       # Expect features_reactive() to return a tibble with cols:
       # Feature, Value, Unit, and optional Trend list-col or we can join from trends_reactive()
       df <- features_reactive()
-      validate(need(is.data.frame(df), "No features available"))
+      
+      # Simple validation
+      req(df)
+      if (!is.data.frame(df) || nrow(df) == 0) {
+        return(tibble::tibble(
+          Feature = character(),
+          Value = numeric(),
+          Unit = character(),
+          Trend = list()
+        ))
+      }
 
       if (!"Trend" %in% names(df)) {
         if (!is.null(trends_reactive)) {
-          tr <- trends_reactive() # tibble Feature, Trend (list of numerics)
-          if (is.data.frame(tr) && "Feature" %in% names(tr) && "Trend" %in% names(tr)) {
+          tr <- try(trends_reactive(), silent = TRUE)
+          if (!inherits(tr, "try-error") && is.data.frame(tr) && 
+              "Feature" %in% names(tr) && "Trend" %in% names(tr)) {
             df <- df %>% left_join(tr, by = "Feature")
           } else {
             df$Trend <- replicate(nrow(df), numeric(0), simplify = FALSE)
