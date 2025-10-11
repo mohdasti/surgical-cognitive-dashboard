@@ -266,13 +266,25 @@ build_features_gt <- function(features_now, refs, personal = NULL) {
       )
     )
 
-  # Sparklines
+  # Sparklines - handle different gtExtras versions
   if (requireNamespace("gtExtras", quietly = TRUE)) {
-    # expects list-col of numerics
-    g <- g %>%
-      gtExtras::gt_sparkline(Trend, same_limit = FALSE)
+    # Try gt_plt_sparkline (newer versions) or gt_sparkline (older versions)
+    tryCatch({
+      if (exists("gt_plt_sparkline", where = asNamespace("gtExtras"))) {
+        g <- g %>% gtExtras::gt_plt_sparkline(Trend, same_limit = FALSE)
+      } else {
+        g <- g %>% gtExtras::gt_sparkline(Trend, same_limit = FALSE)
+      }
+    }, error = function(e) {
+      # If sparklines fail, show dash
+      g <<- g %>%
+        text_transform(
+          locations = cells_body(columns = "Trend"),
+          fn = function(x) rep("—", length(x))
+        )
+    })
   } else {
-    # fallback: show length of trend
+    # fallback: show empty space if gtExtras not installed
     g <- g %>%
       text_transform(
         locations = cells_body(columns = "Trend"),
