@@ -139,11 +139,11 @@ ui <- tagList(
         wellPanel(
           h4("🎛️ Control Panel"),
           
-          checkboxInput("silent", "🔇 Silent mode", FALSE),
-          checkboxInput("enable_logging", "📝 Enable logging", TRUE),
-          hr(),
-          h5("⚙️ Alert Thresholds"),
-          sliderInput("theta_lapse", "🚨 Lapse threshold", 0, 1, 0.3, 0.01),
+            checkboxInput("silent", "🔇 Silent mode", FALSE),
+            checkboxInput("enable_logging", "📝 Enable logging", TRUE),
+            hr(),
+            h5("⚙️ Alert Thresholds"),
+            sliderInput("theta_lapse", "🚨 Lapse threshold", 0, 1, 0.3, 0.01),
           sliderInput("theta_high", "⚠️ High-load threshold", 0, 1, 0.6, 0.01),
           hr(),
           h5("📊 Display Options"),
@@ -536,7 +536,7 @@ server <- function(input, output, session) {
   # })
   
   # Initialize popovers for help icons
-  # init_popovers(session)  # DISABLED - may cause opacity issues
+  init_popovers(session)
   
   # ========================================================================
   # END GUIDED TOUR INTEGRATION
