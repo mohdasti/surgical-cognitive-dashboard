@@ -472,7 +472,7 @@ server <- function(input, output, session) {
           ),
           hr(),
           h5("📊 Calibration Statistics"),
-          uiOutput("calibration_stats")
+          tableOutput("calibration_stats")
         )
       },
       
@@ -810,12 +810,25 @@ server <- function(input, output, session) {
     print(diagnostics$calibration$prob_hist_plot)
   })
   
-  output$calibration_stats <- renderUI({
+  output$calibration_stats <- renderTable({
     req(diagnostics$calibration$calib_stats_gt)
-    # Build the gt table and convert to HTML
-    built_table <- gt::as_raw_html(diagnostics$calibration$calib_stats_gt)
-    HTML(built_table)
-  })
+    # Extract data from gt table and format as simple table
+    gt_data <- diagnostics$calibration$calib_stats_gt
+    data.frame(
+      Metric = c("ECE (Expected Calibration Error)", "MCE (Maximum Calibration Error)", "Brier Score"),
+      Value = c(
+        sprintf("%.6f", gt_data$`_data`$Value[1]),
+        sprintf("%.6f", gt_data$`_data`$Value[2]), 
+        sprintf("%.6f", gt_data$`_data`$Value[3])
+      ),
+      Interpretation = c(
+        if (gt_data$`_data`$Value[1] < 0.01) "Excellent calibration" else "Good calibration",
+        if (gt_data$`_data`$Value[2] < 0.01) "Excellent calibration" else "Good calibration", 
+        if (gt_data$`_data`$Value[3] < 0.01) "Very low prediction error" else "Low prediction error"
+      ),
+      stringsAsFactors = FALSE
+    )
+  }, striped = TRUE, hover = TRUE, bordered = TRUE)
   
   # MODEL OVERVIEW SECTION - REAL DATA
   output$loso_confusion_matrix <- renderPlot({
@@ -944,8 +957,9 @@ server <- function(input, output, session) {
       return()
     }
     
-    # Calculate metrics across different thresholds
-    thresholds <- seq(0.001, 0.999, 0.01)
+    # Calculate metrics across different thresholds (appropriate for this data range)
+    max_prob <- max(lapse_probs)
+    thresholds <- seq(0.0001, max_prob * 1.5, length.out = 50)
     precision <- numeric(length(thresholds))
     recall <- numeric(length(thresholds))
     
@@ -968,13 +982,26 @@ server <- function(input, output, session) {
          xlim = c(0, 1), ylim = c(0, 1))
     grid()
     
-    # Mark current threshold (0.30)
-    current_idx <- which.min(abs(thresholds - 0.30))
-    if (current_idx > 0 && current_idx <= length(thresholds)) {
-      points(recall[current_idx], precision[current_idx], 
+    # Mark optimal threshold (best F1 score)
+    f1_scores <- 2 * precision * recall / (precision + recall)
+    f1_scores[is.nan(f1_scores)] <- 0
+    best_idx <- which.max(f1_scores)
+    
+    if (best_idx > 0 && best_idx <= length(thresholds)) {
+      points(recall[best_idx], precision[best_idx], 
              pch = 19, col = "darkgreen", cex = 2)
+      text(recall[best_idx], precision[best_idx], 
+           sprintf("  Optimal\n  (%.4f)", thresholds[best_idx]), 
+           pos = 4, col = "darkgreen", cex = 0.9)
+    }
+    
+    # Mark current threshold if it's in range
+    current_idx <- which.min(abs(thresholds - 0.30))
+    if (current_idx > 0 && current_idx <= length(thresholds) && thresholds[current_idx] <= max_prob * 1.5) {
+      points(recall[current_idx], precision[current_idx], 
+             pch = 17, col = "orange", cex = 2)
       text(recall[current_idx], precision[current_idx], 
-           "  Current\n  (0.30)", pos = 4, col = "darkgreen", cex = 0.9)
+           "  Current\n  (0.30)", pos = 2, col = "orange", cex = 0.9)
     }
   })
   
