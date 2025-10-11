@@ -101,6 +101,39 @@ palette_for <- function() c("#27ae60", "#f39c12", "#e74c3c")  # green, orange, r
 # returns: gt table
 build_features_gt <- function(features_now, refs, personal = NULL) {
 
+  # Handle empty data gracefully - show a placeholder table
+  if (nrow(features_now) == 0) {
+    placeholder_df <- tibble::tibble(
+      Message = "⏳ Waiting for data...",
+      Info = "The table will populate once biosignal data starts streaming."
+    )
+    return(
+      placeholder_df %>%
+        gt() %>%
+        cols_label(
+          Message = "",
+          Info = ""
+        ) %>%
+        tab_style(
+          style = list(
+            cell_text(size = "large", weight = "bold", color = "#666"),
+            cell_fill(color = "#f8f9fa")
+          ),
+          locations = cells_body(columns = "Message")
+        ) %>%
+        tab_style(
+          style = list(
+            cell_text(size = "medium", color = "#888"),
+            cell_fill(color = "#f8f9fa")
+          ),
+          locations = cells_body(columns = "Info")
+        ) %>%
+        tab_options(
+          table.font.names = c("Inter","system-ui","-apple-system","Segoe UI","Roboto","Helvetica","Arial")
+        )
+    )
+  }
+
   # Add Trend column if missing
   if (!"Trend" %in% names(features_now)) {
     features_now$Trend <- replicate(nrow(features_now), numeric(0), simplify = FALSE)

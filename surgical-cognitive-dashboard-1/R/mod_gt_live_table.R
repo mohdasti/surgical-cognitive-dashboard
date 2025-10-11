@@ -27,9 +27,10 @@ gt_live_table_server <- function(id, features_reactive, trends_reactive = NULL, 
       # Feature, Value, Unit, and optional Trend list-col or we can join from trends_reactive()
       df <- features_reactive()
       
-      # Simple validation
+      # Simple validation - just require that df exists and is a data frame
+      # We'll handle empty data in build_features_gt()
       req(df)
-      if (!is.data.frame(df) || nrow(df) == 0) {
+      if (!is.data.frame(df)) {
         return(tibble::tibble(
           Feature = character(),
           Value = numeric(),
@@ -37,7 +38,13 @@ gt_live_table_server <- function(id, features_reactive, trends_reactive = NULL, 
           Trend = list()
         ))
       }
+      
+      # If empty, return it as-is (build_features_gt will handle)
+      if (nrow(df) == 0) {
+        return(df)
+      }
 
+      # Add Trend column if missing
       if (!"Trend" %in% names(df)) {
         if (!is.null(trends_reactive)) {
           tr <- try(trends_reactive(), silent = TRUE)
