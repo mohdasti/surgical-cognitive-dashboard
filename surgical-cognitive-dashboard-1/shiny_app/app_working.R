@@ -99,6 +99,97 @@ ui <- tagList(
       .status-highload { background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); }
       .status-lapse { background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); }
       
+      /* ============================================
+         CSS ICON ENHANCEMENTS
+         ============================================ */
+      
+      /* 1. Status Indicator Dots */
+      .status-dot {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        margin-right: 8px;
+        vertical-align: middle;
+      }
+      
+      .status-dot-normal {
+        background: #27ae60;
+        box-shadow: 0 0 8px rgba(39, 174, 96, 0.6);
+        animation: pulse-slow 3s infinite;
+      }
+      
+      .status-dot-highload {
+        background: #f39c12;
+        box-shadow: 0 0 8px rgba(243, 156, 18, 0.6);
+        animation: warning-flash 1.5s infinite;
+      }
+      
+      .status-dot-lapse {
+        background: #e74c3c;
+        box-shadow: 0 0 10px rgba(231, 76, 60, 0.8);
+        animation: urgent-pulse 0.8s infinite;
+      }
+      
+      @keyframes pulse-slow {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.1); opacity: 0.8; }
+      }
+      
+      @keyframes warning-flash {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.6; }
+      }
+      
+      @keyframes urgent-pulse {
+        0%, 100% { transform: scale(1); box-shadow: 0 0 10px rgba(231, 76, 60, 0.8); }
+        50% { transform: scale(1.2); box-shadow: 0 0 15px rgba(231, 76, 60, 1); }
+      }
+      
+      /* 2. Connection Heartbeat Indicator */
+      .connection-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      
+      .connection-dot {
+        width: 8px;
+        height: 8px;
+        background: #27ae60;
+        border-radius: 50%;
+        box-shadow: 0 0 6px rgba(39, 174, 96, 0.8);
+        animation: heartbeat 2s infinite;
+      }
+      
+      @keyframes heartbeat {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        10% { transform: scale(1.3); opacity: 1; }
+        20% { transform: scale(1); opacity: 1; }
+        30% { transform: scale(1.3); opacity: 1; }
+        40% { transform: scale(1); opacity: 0.8; }
+      }
+      
+      /* 3. Slider Visual Enhancements */
+      .slider-container {
+        position: relative;
+      }
+      
+      .slider-danger-hint {
+        position: absolute;
+        right: 0;
+        top: -5px;
+        font-size: 0.75em;
+        color: #e74c3c;
+        opacity: 0.7;
+        animation: fade-pulse 2s infinite;
+      }
+      
+      @keyframes fade-pulse {
+        0%, 100% { opacity: 0.7; }
+        50% { opacity: 0.4; }
+      }
+      
       /* KILL OPACITY - Disable Shiny's recalculating fade */
       body, .container-fluid, * { opacity: 1 !important; }
       .recalculating { opacity: 1 !important; }
@@ -171,6 +262,8 @@ ui <- tagList(
           column(12,
             div(style = "background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%); color: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; text-align: center;",
               h3(style = "margin: 5px; color: white; font-weight: 600;", 
+                 class = "connection-status",
+                 tags$span(class = "connection-dot"),
                  textOutput("simulation_clock", inline = TRUE)),
               h5(style = "margin: 5px; color: rgba(255, 255, 255, 0.95); font-weight: 500;", 
                  tags$span(class = "live-indicator", style = "display: inline-block; width: 8px; height: 8px; background: #e74c3c; border-radius: 50%; margin-right: 8px;"),
@@ -184,7 +277,7 @@ ui <- tagList(
           column(4, 
             div(class = "metric-card status-normal",
                 h3("Current Status"),
-                h2(textOutput("status_text", inline = TRUE))
+                h2(uiOutput("status_display"))
             )
           ),
           column(4,
@@ -606,11 +699,25 @@ server <- function(input, output, session) {
     }
   })
   
-  # Status Card - TEXT ONLY (no renderUI)
-  output$status_text <- renderText({
+  # Status Display with animated dot indicator
+  output$status_display <- renderUI({
     current_data <- realtime_data()
-    if (nrow(current_data) == 0) return("Initializing...")
-    tail(current_data$final_state, 1)
+    if (nrow(current_data) == 0) return(tagList(tags$span(class = "status-dot status-dot-normal"), "Initializing..."))
+    
+    status <- tail(current_data$final_state, 1)
+    
+    # Choose dot class based on status
+    dot_class <- switch(status,
+      "Normal" = "status-dot status-dot-normal",
+      "High Load" = "status-dot status-dot-highload",
+      "Attentional Lapse" = "status-dot status-dot-lapse",
+      "status-dot status-dot-normal"  # default
+    )
+    
+    tagList(
+      tags$span(class = dot_class),
+      status
+    )
   })
   
   
