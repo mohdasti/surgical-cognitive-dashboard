@@ -262,8 +262,6 @@ ui <- tagList(
           column(12,
             div(style = "background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%); color: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; text-align: center;",
               h3(style = "margin: 5px; color: white; font-weight: 600;", 
-                 class = "connection-status",
-                 tags$span(class = "connection-dot"),
                  textOutput("simulation_clock", inline = TRUE)),
               h5(style = "margin: 5px; color: rgba(255, 255, 255, 0.95); font-weight: 500;", 
                  tags$span(class = "live-indicator", style = "display: inline-block; width: 8px; height: 8px; background: #e74c3c; border-radius: 50%; margin-right: 8px;"),
