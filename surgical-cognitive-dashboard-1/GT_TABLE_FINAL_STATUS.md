@@ -62,6 +62,14 @@ The GT table system is now fully operational with immediate rendering and real-t
 **Cause:** No initial state rendered
 **Fix:** Added loading message when `nrow(df) == 0`
 
+### Issue 5: Table Not Visible Immediately (FINAL FIX)
+**Cause:** `conditionalPanel` delays rendering until JS evaluates condition
+**Fix:**
+- Replaced `conditionalPanel` with always-rendered `div`
+- Added `shinyjs::toggle()` observer with `ignoreInit = FALSE`
+- GT output now initializes immediately at app startup
+**Result:** ✅ Table visible instantly, no blank space or delay
+
 ---
 
 ## 📊 Table Structure
