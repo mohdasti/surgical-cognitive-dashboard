@@ -16,8 +16,8 @@
 DIAGNOSTICS_SECTIONS <- list(
   threshold_sandbox = list(
     id = "threshold_sandbox",
-    title = "🎯 Threshold Sandbox",
-    icon = "🎯",
+    title = "1. Threshold Sandbox",
+    icon = "1",
     priority = 1,
     default_expanded = TRUE,
     description = "Interactive threshold tuning with real-time precision-recall tradeoffs. Adjust thresholds and see immediate impact on confusion matrix and F1 scores.",
@@ -27,8 +27,8 @@ DIAGNOSTICS_SECTIONS <- list(
   
   calibration = list(
     id = "calibration",
-    title = "📊 Probability Calibration",
-    icon = "📊",
+    title = "2. Probability Calibration",
+    icon = "2",
     priority = 2,
     default_expanded = TRUE,
     description = "Reliability analysis of predicted probabilities. Includes calibration curves, ECE/MCE metrics, and Brier scores.",
@@ -38,8 +38,8 @@ DIAGNOSTICS_SECTIONS <- list(
   
   overview = list(
     id = "overview",
-    title = "📋 Model Overview",
-    icon = "📋",
+    title = "3. Model Overview",
+    icon = "3",
     priority = 3,
     default_expanded = TRUE,  # TEMP: Expanded for testing
     description = "Model architecture, hyperparameters, and feature list. Quick reference for model card information.",
@@ -49,8 +49,8 @@ DIAGNOSTICS_SECTIONS <- list(
   
   cross_validation = list(
     id = "cross_validation",
-    title = "🔄 Cross-Validation Results",
-    icon = "🔄",
+    title = "4. Cross-Validation Results",
+    icon = "4",
     priority = 4,
     default_expanded = TRUE,  # TEMP: Expanded for testing
     description = "Leave-One-Surgeon-Out (LOSO) evaluation with per-fold metrics, confusion matrices, and PR curves.",
@@ -60,8 +60,8 @@ DIAGNOSTICS_SECTIONS <- list(
   
   feature_importance = list(
     id = "feature_importance",
-    title = "⚖️ Feature Importance",
-    icon = "⚖️",
+    title = "5. Feature Importance",
+    icon = "5",
     priority = 5,
     default_expanded = TRUE,  # TEMP: Expanded for testing
     description = "XGBoost gain-based importance and SHAP values. Identifies which biosignals drive predictions.",
@@ -71,8 +71,8 @@ DIAGNOSTICS_SECTIONS <- list(
   
   partial_dependence = list(
     id = "partial_dependence",
-    title = "📈 Partial Dependence",
-    icon = "📈",
+    title = "6. Partial Dependence",
+    icon = "6",
     priority = 6,
     default_expanded = TRUE,  # TEMP: Expanded for testing
     description = "Marginal effect plots showing how each feature influences predictions while holding others constant.",
@@ -349,7 +349,7 @@ mod_diagnostics_progressive_ui <- function(id) {
             style = "display: flex; justify-content: space-between; align-items: center;",
             
             div(
-              h2("📊 ML Model Diagnostics", style = "margin: 0 0 10px 0;"),
+              h2("ML Model Diagnostics", style = "margin: 0 0 10px 0;"),
               p(style = "margin: 0; opacity: 0.9; font-size: 1.05em;",
                 "Comprehensive model evaluation and interpretability analysis. ",
                 "Sections are ordered by impact — start with Threshold Sandbox and Calibration."
@@ -383,7 +383,7 @@ mod_diagnostics_progressive_ui <- function(id) {
         div(
           style = "position: sticky; top: 20px; background: white; padding: 15px; border-radius: 8px; border: 1px solid #dee2e6;",
           
-          h5("📑 Table of Contents", style = "margin-top: 0; color: #495057;"),
+          h5("Table of Contents", style = "margin-top: 0; color: #495057;"),
           
           div(
             id = ns("toc"),

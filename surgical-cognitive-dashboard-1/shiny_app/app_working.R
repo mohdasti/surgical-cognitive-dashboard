@@ -437,7 +437,7 @@ server <- function(input, output, session) {
     content_generators = list(
       threshold_sandbox = function() {
         div(
-          h5("🎯 Interactive Threshold Tuning"),
+          h5("Interactive Threshold Tuning"),
           p("Explore precision-recall tradeoffs at different decision boundaries."),
           p(style = "color: #666; font-size: 0.9em;", 
             "Real LOSO cross-validation data showing how threshold choices affect performance metrics."),
@@ -458,49 +458,49 @@ server <- function(input, output, session) {
       
       calibration = function() {
         div(
-          h5("📊 Probability Calibration Analysis"),
+          h5("Probability Calibration Analysis"),
           p("Reliability analysis of predicted probabilities from LOSO cross-validation."),
           fluidRow(
             column(6,
-              h5("🎲 Calibration Plot"),
+              h5("Calibration Plot"),
               plotOutput("calibration_plot_real", height = "350px")
             ),
             column(6,
-              h5("📊 Probability Distribution"),
+              h5("Probability Distribution"),
               plotOutput("prob_hist_plot_real", height = "350px")
             )
           ),
           hr(),
-          h5("📊 Calibration Statistics"),
+          h5("Calibration Statistics"),
           tableOutput("calibration_stats")
         )
       },
       
       overview = function() {
         div(
-          h5("📋 Model Overview & Performance"),
+          h5("Model Overview & Performance"),
           p("XGBoost multi-class classifier trained on leave-one-surgeon-out cross-validation."),
           fluidRow(
             column(6,
-              h4("🎯 LOSO Confusion Matrix"),
+              h4("LOSO Confusion Matrix"),
               plotOutput("loso_confusion_matrix", height = "400px")
             ),
             column(6,
-              h4("📈 Precision-Recall (Lapse Detection)"),
+              h4("Precision-Recall (Lapse Detection)"),
               plotOutput("loso_pr_curve", height = "400px")
             )
           ),
           hr(),
-          h5("🔧 Model Hyperparameters"),
+          h5("Model Hyperparameters"),
           verbatimTextOutput("model_params")
         )
       },
       
       cross_validation = function() {
         div(
-          h5("🔄 Leave-One-Surgeon-Out (LOSO) Validation"),
+          h5("Leave-One-Surgeon-Out (LOSO) Validation"),
           p("Model generalizability: each surgeon held out once as test set, trained on all others."),
-          h5("📊 Cross-Validation Summary"),
+          h5("Cross-Validation Summary"),
           tableOutput("loso_summary_table"),
           hr(),
           p(style = "font-size: 0.9em; color: #7f8c8d;",
@@ -511,9 +511,9 @@ server <- function(input, output, session) {
       
       feature_importance = function() {
         div(
-          h5("⚖️ Feature Contribution Analysis"),
+          h5("Feature Contribution Analysis"),
           p("XGBoost feature importance showing which biosignals most influence cognitive state predictions."),
-          h5("📊 Feature Importance (Gain)"),
+          h5("Feature Importance (Gain)"),
           plotOutput("feature_importance_plot", height = "400px"),
           hr(),
           p(style = "font-size: 0.9em; color: #7f8c8d;",
@@ -524,7 +524,7 @@ server <- function(input, output, session) {
       
       partial_dependence = function() {
         div(
-          h5("📈 Partial Dependence Plots"),
+          h5("Partial Dependence Plots"),
           p("Marginal effect of each feature on cognitive state predictions, holding other features constant."),
           fluidRow(
             column(4, plotOutput("pd_plot_1", height = "300px")),
