@@ -462,7 +462,7 @@ server <- function(input, output, session) {
           ),
           hr(),
           h5("📊 Calibration Statistics"),
-          tableOutput("calibration_stats")
+          uiOutput("calibration_stats")
         )
       },
       
@@ -789,56 +789,35 @@ server <- function(input, output, session) {
   # DIAGNOSTIC PLOTS - REAL DATA FROM .RDS FILES
   # ========================================================================
   
-  # CALIBRATION SECTION - SIMPLE TEST VERSION
+  # CALIBRATION SECTION - REAL DATA
   output$calibration_plot_real <- renderPlot({
-    # Create a simple test plot to verify rendering works
-    plot(1:10, rnorm(10), main = "Calibration Plot (Test)", 
-         xlab = "Expected Probability", ylab = "Observed Probability",
-         pch = 19, col = "#3498db")
-    abline(0, 1, col = "red", lwd = 2)
-    text(8, 0.5, "Test Plot Working!", col = "darkgreen", cex = 1.2)
+    req(diagnostics$calibration$calib_plot)
+    print(diagnostics$calibration$calib_plot)
   })
   
   output$prob_hist_plot_real <- renderPlot({
-    # Create a simple test plot
-    hist(rnorm(1000), main = "Probability Distribution (Test)",
-         xlab = "Probability", ylab = "Frequency",
-         col = "#e74c3c", border = "white")
-    text(0, 200, "Test Plot Working!", col = "darkgreen", cex = 1.2)
+    req(diagnostics$calibration$prob_hist_plot)
+    print(diagnostics$calibration$prob_hist_plot)
   })
   
-  output$calibration_stats <- renderTable({
-    # Create a simple calibration statistics table
-    data.frame(
-      Metric = c("ECE (Expected Calibration Error)", "MCE (Maximum Calibration Error)", "Brier Score"),
-      Value = c("0.0003", "0.0003", "0.0019"),
-      Interpretation = c("Excellent calibration", "Excellent calibration", "Low prediction error"),
-      stringsAsFactors = FALSE
-    )
-  }, striped = TRUE, hover = TRUE, bordered = TRUE)
+  output$calibration_stats <- renderUI({
+    req(diagnostics$calibration$calib_stats_gt)
+    HTML(as.character(diagnostics$calibration$calib_stats_gt))
+  })
   
-  # MODEL OVERVIEW SECTION - MINIMAL TEST WITH LOGGING
+  # MODEL OVERVIEW SECTION - REAL DATA
   output$loso_confusion_matrix <- renderPlot({
-    cat("🔥 RENDERING loso_confusion_matrix\n")
-    # Use the exact same plot that works
-    plot(1:10, rnorm(10), main = "LOSO Confusion Matrix (Test)", 
-         xlab = "Expected Probability", ylab = "Observed Probability",
-         pch = 19, col = "#3498db")
-    abline(0, 1, col = "red", lwd = 2)
-    text(8, 0.5, "Test Plot Working!", col = "darkgreen", cex = 1.2)
+    req(diagnostics$loso$cm_plot)
+    print(diagnostics$loso$cm_plot)
   })
   
   output$loso_pr_curve <- renderPlot({
-    cat("🔥 RENDERING loso_pr_curve\n")
-    # Use the exact same plot that works
-    plot(1:10, rnorm(10), main = "Precision-Recall Curve (Test)", 
-         xlab = "Expected Probability", ylab = "Observed Probability",
-         pch = 19, col = "#3498db")
-    abline(0, 1, col = "red", lwd = 2)
-    text(8, 0.5, "Test Plot Working!", col = "darkgreen", cex = 1.2)
+    req(diagnostics$loso$pr_lapse_plot)
+    print(diagnostics$loso$pr_lapse_plot)
   })
   
   output$model_params <- renderText({
+    req(diagnostics$artifacts$params)
     params <- diagnostics$artifacts$params
     paste(
       "Model: XGBoost Multi-Class Classifier\n",
@@ -854,89 +833,115 @@ server <- function(input, output, session) {
     )
   })
   
-  # CROSS-VALIDATION SECTION - SIMPLE TABLE
+  # CROSS-VALIDATION SECTION - REAL DATA
   output$loso_summary_table <- renderTable({
-    # Create a simple LOSO summary table
+    req(diagnostics$loso$loso_df)
+    loso_data <- diagnostics$loso$loso_df
+    
+    # Format for display
     data.frame(
-      Surgeon = c("S1", "S2", "S3"),
-      `PR-AUC` = c(0.0015, 0.0160, 0.0225),
-      `Precision` = c(0.85, 0.78, 0.92),
-      `Recall` = c(0.82, 0.75, 0.89),
+      Surgeon = loso_data$holdout,
+      `PR-AUC` = round(loso_data$pr_auc, 4),
+      check.names = FALSE,
       stringsAsFactors = FALSE
     )
-  }, striped = TRUE, hover = TRUE, bordered = TRUE, digits = 4)
+  }, striped = TRUE, hover = TRUE, bordered = TRUE)
   
-  # FEATURE IMPORTANCE SECTION - MINIMAL TEST
+  # FEATURE IMPORTANCE SECTION - REAL DATA
   output$feature_importance_plot <- renderPlot({
-    # Use the exact same plot that works
-    plot(1:10, rnorm(10), main = "Feature Importance (Test)", 
-         xlab = "Expected Probability", ylab = "Observed Probability",
-         pch = 19, col = "#3498db")
-    abline(0, 1, col = "red", lwd = 2)
-    text(8, 0.5, "Test Plot Working!", col = "darkgreen", cex = 1.2)
+    req(diagnostics$artifacts$xgb_importance_plot)
+    importance_data <- diagnostics$artifacts$xgb_importance_plot
+    
+    # Create horizontal barplot
+    par(mar = c(5, 12, 4, 2))  # Increase left margin for feature names
+    barplot(
+      importance_data$Gain,
+      names.arg = importance_data$Feature,
+      horiz = TRUE,
+      las = 1,
+      main = "XGBoost Feature Importance (Gain)",
+      xlab = "Gain",
+      col = "#3498db",
+      border = NA
+    )
   })
   
-  # PARTIAL DEPENDENCE SECTION - MINIMAL TEST
+  # PARTIAL DEPENDENCE SECTION - REAL DATA
   output$pd_plot_1 <- renderPlot({
-    # Use the exact same plot that works
-    plot(1:10, rnorm(10), main = "Pupil Diameter PD (Test)", 
-         xlab = "Expected Probability", ylab = "Observed Probability",
-         pch = 19, col = "#3498db")
-    abline(0, 1, col = "red", lwd = 2)
-    text(8, 0.5, "Test Plot Working!", col = "darkgreen", cex = 1.2)
+    req(diagnostics$artifacts$pd_plots)
+    req(length(diagnostics$artifacts$pd_plots) >= 1)
+    print(diagnostics$artifacts$pd_plots[[1]])
   })
   
   output$pd_plot_2 <- renderPlot({
-    # Use the exact same plot that works
-    plot(1:10, rnorm(10), main = "Grip Force PD (Test)", 
-         xlab = "Expected Probability", ylab = "Observed Probability",
-         pch = 19, col = "#3498db")
-    abline(0, 1, col = "red", lwd = 2)
-    text(8, 0.5, "Test Plot Working!", col = "darkgreen", cex = 1.2)
+    req(diagnostics$artifacts$pd_plots)
+    req(length(diagnostics$artifacts$pd_plots) >= 2)
+    print(diagnostics$artifacts$pd_plots[[2]])
   })
   
   output$pd_plot_3 <- renderPlot({
-    # Use the exact same plot that works
-    plot(1:10, rnorm(10), main = "Tremor Amplitude PD (Test)", 
-         xlab = "Expected Probability", ylab = "Observed Probability",
-         pch = 19, col = "#3498db")
-    abline(0, 1, col = "red", lwd = 2)
-    text(8, 0.5, "Test Plot Working!", col = "darkgreen", cex = 1.2)
+    req(diagnostics$artifacts$pd_plots)
+    req(length(diagnostics$artifacts$pd_plots) >= 3)
+    print(diagnostics$artifacts$pd_plots[[3]])
   })
   
-  # THRESHOLD SANDBOX SECTION - SIMPLE TEST VERSION
+  # THRESHOLD SANDBOX SECTION - REAL DATA
   output$threshold_metrics_plot <- renderPlot({
-    # Create a simple test histogram
-    lapse_probs <- rbeta(1000, 2, 8)  # Beta distribution for probabilities
-    hist(lapse_probs, breaks = 30, 
-         main = "Distribution of Lapse Probabilities (Test)",
+    req(diagnostics$threshold_sandbox$data$lapse_p)
+    req(diagnostics$threshold_sandbox$data$lab_bin)
+    
+    lapse_probs <- diagnostics$threshold_sandbox$data$lapse_p
+    labels <- diagnostics$threshold_sandbox$data$lab_bin
+    
+    # Distribution of predicted probabilities
+    hist(lapse_probs, breaks = 50, 
+         main = "Distribution of Lapse Probabilities",
          xlab = "Lapse Probability", ylab = "Frequency",
-         col = "#3498db", border = "white")
+         col = "#3498db", border = "white", xlim = c(0, 1))
+    
+    # Mark current threshold
     abline(v = 0.30, col = "red", lwd = 3, lty = 2)
-    text(0.30, par("usr")[4] * 0.8, "Current Threshold (0.30)", 
-         col = "red", pos = 2, cex = 1.0)
-    text(0.5, par("usr")[4] * 0.6, "Test Plot Working!", 
-         col = "darkgreen", cex = 1.2)
+    text(0.30, par("usr")[4] * 0.9, "Current\nThreshold\n(0.30)", 
+         col = "red", pos = 4, cex = 0.9)
   })
   
   output$threshold_f1_plot <- renderPlot({
-    # Create a simple test ROC curve
-    fpr <- seq(0, 1, 0.05)
-    tpr <- fpr^0.7 + 0.1 * fpr  # Simple ROC-like curve
+    req(diagnostics$threshold_sandbox$data$lapse_p)
+    req(diagnostics$threshold_sandbox$data$lab_bin)
     
-    plot(fpr, tpr, type = "l", lwd = 3, col = "#e74c3c",
-         main = "ROC Curve - Lapse Detection (Test)",
-         xlab = "False Positive Rate", ylab = "True Positive Rate",
+    lapse_probs <- diagnostics$threshold_sandbox$data$lapse_p
+    labels <- as.numeric(diagnostics$threshold_sandbox$data$lab_bin)
+    
+    # Calculate metrics across different thresholds
+    thresholds <- seq(0.01, 0.99, 0.01)
+    precision <- numeric(length(thresholds))
+    recall <- numeric(length(thresholds))
+    
+    for (i in seq_along(thresholds)) {
+      thresh <- thresholds[i]
+      pred <- as.numeric(lapse_probs >= thresh)
+      
+      tp <- sum(pred == 1 & labels == 1)
+      fp <- sum(pred == 1 & labels == 0)
+      fn <- sum(pred == 0 & labels == 1)
+      
+      precision[i] <- if (tp + fp > 0) tp / (tp + fp) else 0
+      recall[i] <- if (tp + fn > 0) tp / (tp + fn) else 0
+    }
+    
+    # Plot Precision-Recall tradeoff
+    plot(recall, precision, type = "l", lwd = 3, col = "#e74c3c",
+         main = "Precision-Recall Tradeoff",
+         xlab = "Recall (Sensitivity)", ylab = "Precision (PPV)",
          xlim = c(0, 1), ylim = c(0, 1))
-    abline(0, 1, col = "gray", lty = 2, lwd = 2)
+    grid()
     
-    # Mark current threshold point
-    current_fpr <- 0.15
-    current_tpr <- current_fpr^0.7 + 0.1 * current_fpr
-    points(current_fpr, current_tpr, pch = 19, col = "red", cex = 2)
-    text(current_fpr + 0.05, current_tpr + 0.05, "Current\nThreshold", 
-         col = "red", cex = 1.0)
-    text(0.6, 0.3, "Test Plot Working!", col = "darkgreen", cex = 1.2)
+    # Mark current threshold (0.30)
+    current_idx <- which.min(abs(thresholds - 0.30))
+    points(recall[current_idx], precision[current_idx], 
+           pch = 19, col = "darkgreen", cex = 2)
+    text(recall[current_idx], precision[current_idx], 
+         "  Current\n  (0.30)", pos = 4, col = "darkgreen", cex = 0.9)
   })
   
   # Alert Log
