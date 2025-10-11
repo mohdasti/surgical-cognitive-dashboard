@@ -139,20 +139,23 @@ ui <- tagList(
         wellPanel(
           h4("🎛️ Control Panel"),
           
-            checkboxInput("silent", "🔇 Silent mode", FALSE),
-            checkboxInput("enable_logging", "📝 Enable logging", TRUE),
+          checkboxInput("silent", "🔇 Silent mode", FALSE),
+          helpText(style = "font-size: 0.85em; color: #666; margin-top: -10px;",
+            "Suppress alert notifications"),
+          
             hr(),
             h5("⚙️ Alert Thresholds"),
             sliderInput("theta_lapse", "🚨 Lapse threshold", 0, 1, 0.3, 0.01),
           sliderInput("theta_high", "⚠️ High-load threshold", 0, 1, 0.6, 0.01),
+          
           hr(),
           h5("📊 Display Options"),
           checkboxInput("show_features", "🔬 Show feature values", value = TRUE),
-          actionButton("reset_session", "🔄 Reset Session", class = "btn-warning"),
-          tags$small(
-            style = "color: #7f8c8d; margin-top: 10px; display: block;",
-            "💡 Real-time plots are always visible (core monitoring)"
-          )
+          helpText(style = "font-size: 0.85em; color: #666; margin-top: -10px;",
+            "Toggle 57-feature biosignal table"),
+          
+          hr(),
+          actionButton("reset_session", "🔄 Reset Session", class = "btn-warning")
         )
       ),
       column(9,
