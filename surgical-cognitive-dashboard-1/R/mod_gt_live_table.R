@@ -55,8 +55,21 @@ gt_live_table_server <- function(id, features_reactive, trends_reactive = NULL, 
     })
 
     output$tbl <- gt::render_gt({
+      df <- features_now()
+      
+      # Show a loading message if no data yet
+      if (nrow(df) == 0) {
+        return(
+          gt(tibble::tibble(Status = "⏳ Loading features...")) %>%
+            tab_options(
+              table.font.size = px(14),
+              table.width = pct(100)
+            )
+        )
+      }
+      
       build_features_gt(
-        features_now(),
+        df,
         refs = refs(),
         personal = if (is.null(personal_reactive)) NULL else personal_reactive()
       )
