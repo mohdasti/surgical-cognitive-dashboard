@@ -1,0 +1,55 @@
+suppressPackageStartupMessages({
+  library(shiny)
+  library(dplyr)
+  library(tidyr)
+  library(purrr)
+  library(gt)
+})
+
+gt_live_table_ui <- function(id, title = "Real-time Feature Monitor") {
+  ns <- NS(id)
+  tagList(
+    h3(title, class = "mt-2 mb-2"),
+    gt::gt_output(ns("tbl"))
+  )
+}
+
+gt_live_table_server <- function(id, features_reactive, trends_reactive = NULL, params_reactive = NULL, personal_reactive = NULL, refs_path = "data/reference_ranges.csv") {
+  moduleServer(id, function(input, output, session) {
+
+    refs <- reactive({
+      params <- if (is.null(params_reactive)) NULL else params_reactive()
+      load_reference_ranges(params = params, path = refs_path)
+    })
+
+    features_now <- reactive({
+      # Expect features_reactive() to return a tibble with cols:
+      # Feature, Value, Unit, and optional Trend list-col or we can join from trends_reactive()
+      df <- features_reactive()
+      validate(need(is.data.frame(df), "No features available"))
+
+      if (!"Trend" %in% names(df)) {
+        if (!is.null(trends_reactive)) {
+          tr <- trends_reactive() # tibble Feature, Trend (list of numerics)
+          if (is.data.frame(tr) && "Feature" %in% names(tr) && "Trend" %in% names(tr)) {
+            df <- df %>% left_join(tr, by = "Feature")
+          } else {
+            df$Trend <- replicate(nrow(df), numeric(0), simplify = FALSE)
+          }
+        } else {
+          df$Trend <- replicate(nrow(df), numeric(0), simplify = FALSE)
+        }
+      }
+      df
+    })
+
+    output$tbl <- gt::render_gt({
+      build_features_gt(
+        features_now(),
+        refs = refs(),
+        personal = if (is.null(personal_reactive)) NULL else personal_reactive()
+      )
+    })
+  })
+}
+
