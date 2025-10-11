@@ -55,7 +55,7 @@ ui <- tagList(
   # mod_compare_drawer_ui("compare"),
   
   navbarPage(
-    "🧠 Surgical Cognitive Dashboard",
+    "Surgical Cognitive Dashboard",
     id = "main_navbar",
     theme = create_dashboard_theme(),  # Apply theme to navbarPage
     
@@ -86,6 +86,14 @@ ui <- tagList(
         0% { transform: scale(1); }
         50% { transform: scale(1.05); }
         100% { transform: scale(1); }
+      }
+      @keyframes live-pulse {
+        0% { opacity: 1; box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); }
+        50% { opacity: 0.7; box-shadow: 0 0 0 5px rgba(231, 76, 60, 0); }
+        100% { opacity: 1; box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+      }
+      .live-indicator {
+        animation: live-pulse 2s infinite;
       }
       .status-normal { background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%); }
       .status-highload { background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); }
@@ -164,8 +172,10 @@ ui <- tagList(
           column(12,
             div(style = "background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%); color: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; text-align: center;",
               h3(style = "margin: 5px; color: white; font-weight: 600;", 
-                 "⏱️ ", textOutput("simulation_clock", inline = TRUE)),
-              h5(style = "margin: 5px; color: rgba(255, 255, 255, 0.95); font-weight: 500;", "🔴 LIVE MONITORING | 10-Min Segment of a Simulated Robotic-Assisted Cholecystectomy (da Vinci Xi)")
+                 textOutput("simulation_clock", inline = TRUE)),
+              h5(style = "margin: 5px; color: rgba(255, 255, 255, 0.95); font-weight: 500;", 
+                 tags$span(class = "live-indicator", style = "display: inline-block; width: 8px; height: 8px; background: #e74c3c; border-radius: 50%; margin-right: 8px;"),
+                 "LIVE MONITORING | 10-Min Segment of a Simulated Robotic-Assisted Cholecystectomy (da Vinci Xi)")
             )
           )
         ),
@@ -197,7 +207,7 @@ ui <- tagList(
         
         # Real-time Plots (always visible - core functionality)
         div(
-          h4("📈 Real-time Biosignal Monitoring",
+          h4("Real-time Biosignal Monitoring",
              tags$sup(
                style = "margin-left: 8px;",
                tags$a(
@@ -226,12 +236,12 @@ ui <- tagList(
         # Feature Values Table
         conditionalPanel(
           condition = "input.show_features",
-          h4("🔬 Real-time Feature Values"),
+          h4("Real-time Feature Values"),
           DT::dataTableOutput("features_table")
         ),
         
         # Alert Log
-        h4("📋 Alert Log"),
+        h4("Alert Log"),
         DT::dataTableOutput("alertlog")
       )
     )
