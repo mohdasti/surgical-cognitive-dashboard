@@ -101,29 +101,49 @@ palette_for <- function() c("#27ae60", "#f39c12", "#e74c3c")  # green, orange, r
 # returns: gt table
 build_features_gt <- function(features_now, refs, personal = NULL) {
 
+  # Add Trend column if missing
+  if (!"Trend" %in% names(features_now)) {
+    features_now$Trend <- replicate(nrow(features_now), numeric(0), simplify = FALSE)
+  }
+  
   # Merge with refs & compute status + effect size
+  # Use suffix to avoid column name conflicts
   df <- features_now %>%
-    left_join(refs, by = c("Feature")) %>%
+    left_join(refs, by = c("Feature"), suffix = c(".live", ".ref")) %>%
     mutate(
+      # Use the live Unit if available, otherwise ref Unit
+      Unit_display = if ("Unit.live" %in% names(cur_data())) Unit.live else Unit.ref,
       Effect_Size = map2_dbl(Value, baseline_mean, ~effect_size_d(.x, .y, baseline_sd)),
       Status      = pmap_chr(cur_data_all(), ~{
-        # ..1=Feature, ..2=Value, ..3=Unit, then ref cols (depends on join order)
+        # Extract the necessary columns for status determination
+        # Column positions may vary, so we'll use named access
+        row_data <- list(...)
         row <- tibble(
-          normal_low = ..7, normal_high = ..8, alert_low = ..9, alert_high = ..10,
-          direction = ..11
+          normal_low = row_data$normal_low,
+          normal_high = row_data$normal_high,
+          alert_low = row_data$alert_low,
+          alert_high = row_data$alert_high,
+          direction = row_data$direction
         )
-        status_from_value(..2, row)
+        status_from_value(row_data$Value, row)
       }),
       Status_Icon = vapply(Status, status_icon_html, character(1)),
       Reference   = pmap_chr(cur_data_all(), ~{
-        bmean <- ..6; bsd <- ..7
+        row_data <- list(...)
+        bmean <- row_data$baseline_mean
+        bsd <- row_data$baseline_sd
         ci_lo <- if (!is.na(bmean) && !is.na(bsd)) bmean - 1.96*bsd else NA_real_
         ci_hi <- if (!is.na(bmean) && !is.na(bsd)) bmean + 1.96*bsd else NA_real_
         rng <- if (!is.na(ci_lo)) sprintf("%.2f–%.2f", ci_lo, ci_hi) else ""
-        doi <- ..13; pm  <- ..14
+        doi <- row_data$doi
+        pm  <- row_data$pubmed
         cite <- c()
-        if (!is.na(doi)) cite <- c(cite, sprintf("[DOI](https://doi.org/%s)", doi))
-        if (!is.na(pm))  cite <- c(cite, sprintf("[PubMed](%s)", pm))
+        if (!is.na(doi) && !is.null(doi) && doi != "") {
+          cite <- c(cite, sprintf("[DOI](https://doi.org/%s)", doi))
+        }
+        if (!is.na(pm) && !is.null(pm) && pm != "") {
+          cite <- c(cite, sprintf("[PubMed](%s)", pm))
+        }
         paste0(rng, if (length(cite)) paste0("  ", paste(cite, collapse = " | ")) else "")
       })
     ) %>%
@@ -131,9 +151,9 @@ build_features_gt <- function(features_now, refs, personal = NULL) {
     transmute(
       Group    = group,
       Feature  = Feature,
-      Value    = ifelse(Unit %in% c("%"), Value, Value), # keep numeric
-      Unit     = Unit,
-      Trend    = Trend %||% map(seq_len(n()), ~numeric(0)),
+      Value    = Value,  # keep numeric
+      Unit     = Unit_display,
+      Trend    = Trend,
       Ref_CI   = Reference,
       Effect_Size = Effect_Size,
       Status   = Status,
