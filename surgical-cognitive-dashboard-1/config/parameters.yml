@@ -1,0 +1,112 @@
+# Surgical Cognitive Dashboard - Biosignal Parameters
+# Literature-validated baselines, variability, and thresholds
+# Last updated: 2025-10-11
+
+# Pupillometry parameters
+pupil:
+  baseline_mm_mean: 3.5              # Wu et al. 2019, Beatty 1982
+  baseline_mm_sd: 0.2                # Individual variation
+  tepr_delta_mm_low: 0.3             # Task-evoked pupillary response minimum
+  tepr_delta_mm_high: 0.5            # TEPR maximum under cognitive load
+  fatigue_baseline_drop_mm_per_hr: 0.5  # Constriction over time
+  hippus_power_band_hz: [0.05, 0.3]  # Slow oscillation band
+  
+# Grip force parameters
+grip:
+  baseline_N_mean: 3.0               # Johansson & Westling 1984
+  baseline_N_sd: 1.0                 # Task-dependent variation
+  cv_fresh_pct: 8                    # Coefficient of variation when fresh
+  cv_fatigued_pct: 12                # CV under fatigue
+  stress_spike_N_min: 1              # Stress-induced force increase
+  stress_spike_N_max: 2
+  stress_spike_duration_s_min: 5
+  stress_spike_duration_s_max: 20
+
+# Tremor parameters
+tremor:
+  rms_um_mean: 100                   # Elble & Koller 1990, Riviere et al. 1997
+  rms_um_sd: 30                      # Physiological variability
+  band_hz: [8, 12]                   # Physiological tremor band
+  fatigue_growth_model: "nonlinear"  # Growth model type
+  growth_pct_first_30min: 10         # Early fatigue effect
+  growth_pct_per_hr_after: 25        # Sustained fatigue effect
+
+# Heart Rate Variability parameters
+hrv:
+  sdnn_ms_baseline: 60               # Standard deviation of NN intervals
+  rmssd_ms_baseline: 40              # Root mean square of successive differences
+  low_hrv_drop_pct_alert: 30         # Alert threshold for HRV decrease
+  window_s: 300                      # 5-minute analysis window
+  rr_fs_hz: 4                        # RR interval sampling frequency for interpolation
+  load_sdnn_drop_pct: 20             # SDNN decrease under cognitive load (min)
+  load_sdnn_drop_pct_max: 40         # SDNN decrease under cognitive load (max)
+  load_rmssd_drop_pct: 20            # RMSSD decrease under cognitive load (min)
+  load_rmssd_drop_pct_max: 40        # RMSSD decrease under cognitive load (max)
+  load_duration_min_s: 60            # Minimum load episode duration
+  load_duration_max_s: 300           # Maximum load episode duration
+
+# Analysis windows
+windows:
+  short_s: 60                        # Short-term window (1 minute)
+  medium_s: 300                      # Medium-term window (5 minutes)
+  long_s: 600                        # Long-term window (10 minutes)
+
+# Detection thresholds
+thresholds:
+  high_load_prob: 0.70               # Probability threshold for high cognitive load
+  lapse_prob: 0.30                   # Probability threshold for attentional lapse
+  tremor_fatigue_alert_pct_above_personal: 20  # % above personal baseline for alert
+  pupil_tepr_min_mm: 0.3             # Minimum TEPR for high load confirmation
+  hrv_drop_alert_pct: 30             # HRV drop % for alert confirmation
+  grip_cv_alert_pct: 15              # CV % threshold for fatigue alert
+  blink_perclos_alert_pct: 10        # PERCLOS threshold for drowsiness
+
+# Feature toggles
+toggles:
+  simulate: true                     # Use simulation vs. live data
+  enable_eda: false                  # Electrodermal activity (future)
+  enable_blinks: true                # Blink rate and PERCLOS
+  enable_hrv: true                   # Heart rate variability
+  enable_tremor: true                # Tremor analysis
+  enable_grip: true                  # Grip force analysis
+  enable_pupil: true                 # Pupillometry
+  enable_calibration: true           # Per-surgeon calibration
+  enable_audio_alerts: false         # Audio alert tones
+  enable_logging: true               # Structured logging to disk
+
+# Simulation parameters (used when toggles.simulate = true)
+simulation:
+  duration_s: 600                    # 10-minute simulation
+  sampling_hz: 5                     # 5 Hz sampling rate
+  num_surgeons: 10                   # Number of surgeons to simulate
+  lapse_rate: 0.002                  # Rare event rate (~0.2%)
+  high_load_rate: 0.15               # High load episode rate (~15%)
+  
+# Break detection parameters
+breaks:
+  min_break_duration_s: 120          # Minimum 2-minute break
+  max_no_break_duration_s: 3600      # Alert after 1 hour without break
+  recommended_break_frequency_min: 45  # Recommend break every 45 minutes
+
+# Logging parameters
+logging:
+  max_file_size_mb: 100              # Roll logs at 100MB
+  retention_days: 90                 # Keep logs for 90 days
+  compression: "gzip"                # Compress old logs
+  pii_mode: "anonymized"             # Options: "full", "anonymized", "minimal"
+
+# Performance tuning
+performance:
+  ingest_poll_hz: 2                  # Poll ingest buffers at 2 Hz
+  feature_compute_hz: 1              # Compute features at 1 Hz
+  ui_update_hz: 5                    # Update UI at 5 Hz
+  max_buffer_rows: 10000             # Maximum rows in ingest buffer
+  use_parallel: false                # Parallel processing for features (future)
+  
+# Development/debugging
+dev:
+  enable_tour: false                 # Guided tour (causes opacity issues)
+  verbose_logging: false             # Detailed console logs
+  save_debug_plots: false            # Save intermediate plots
+  profile_performance: false         # Profile computation time
+
