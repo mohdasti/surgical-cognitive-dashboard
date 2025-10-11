@@ -326,8 +326,10 @@ ui <- tagList(
         ),
         
         # Feature Values Table (GT version with literature ranges)
-        conditionalPanel(
-          condition = "input.show_features",
+        # Always render but toggle visibility for immediate display
+        div(
+          id = "gt_features_container",
+          style = "display: block;",  # Show by default since checkbox is checked
           gt_live_table_ui("gtlive", title = "Real-time Feature Values")
         ),
         
@@ -950,6 +952,11 @@ server <- function(input, output, session) {
     personal_reactive = reactive({ NULL }),  # Can add personal baselines later
     refs_path = "../data/reference_ranges.csv"
   )
+  
+  # Toggle GT table visibility based on checkbox
+  observeEvent(input$show_features, {
+    shinyjs::toggle("gt_features_container", condition = input$show_features)
+  }, ignoreNULL = FALSE, ignoreInit = FALSE)
   
   # ========================================================================
   # DIAGNOSTIC PLOTS - REAL DATA FROM .RDS FILES
