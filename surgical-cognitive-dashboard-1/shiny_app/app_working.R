@@ -641,7 +641,7 @@ server <- function(input, output, session) {
     plot_ly(current_data, x = ~(timestamp/60), y = ~pupil_diameter, 
             type = 'scatter', mode = 'lines',
             line = list(color = '#3498db', width = 2)) %>%
-      layout(title = "👁️ Pupil Diameter (photopic, TEPR)",
+      layout(title = "Pupil Diameter (photopic, TEPR)",
              xaxis = list(title = "Time (minutes)"),
              yaxis = list(title = "Diameter (mm)", range = c(2.5, 5.0)))
   })
@@ -653,7 +653,7 @@ server <- function(input, output, session) {
     plot_ly(current_data, x = ~(timestamp/60), y = ~grip_force,
             type = 'scatter', mode = 'lines',
             line = list(color = '#e74c3c', width = 2)) %>%
-      layout(title = "✋ Grip Force (da Vinci robotic instruments)",
+      layout(title = "Grip Force (da Vinci robotic instruments)",
              xaxis = list(title = "Time (minutes)"),
              yaxis = list(title = "Force (N)", range = c(0, 10)))
   })
@@ -665,7 +665,7 @@ server <- function(input, output, session) {
     plot_ly(current_data, x = ~(timestamp/60), y = ~tremor_amplitude,
             type = 'scatter', mode = 'lines',
             line = list(color = '#f39c12', width = 2)) %>%
-      layout(title = "🤲 Tremor Amplitude (8-12 Hz, μm)",
+      layout(title = "Tremor Amplitude (8-12 Hz, μm)",
              xaxis = list(title = "Time (minutes)"),
              yaxis = list(title = "Amplitude (μm)", range = c(0, 100)))
   })
@@ -724,7 +724,7 @@ server <- function(input, output, session) {
                 line = list(width = 0),
                 hovertemplate = paste0(LABELS$lapse, ': %{customdata:.1%}<extra></extra>'),
                 customdata = ~state_probs_lapse_smooth) %>%
-      layout(title = "🧠 Cognitive State Distribution (Stacked Probabilities)",
+      layout(title = "Cognitive State Distribution (Stacked Probabilities)",
              xaxis = list(title = "Time (minutes)"),
              yaxis = list(title = "Probability", range = c(0, 1), tickformat = ',.0%'),
              hovermode = 'x unified',
