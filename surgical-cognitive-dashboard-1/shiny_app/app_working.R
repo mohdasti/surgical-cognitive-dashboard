@@ -139,7 +139,7 @@ ui <- tagList(
   # ========================================================================
   # TAB 1: LIVE MONITOR
   # ========================================================================
-  tabPanel("🏥 Live Monitor",
+  tabPanel("Live Monitor",
     
     fluidRow(
       column(3,
@@ -150,18 +150,18 @@ ui <- tagList(
           helpText(style = "font-size: 0.85em; color: #666; margin-top: -10px;",
             "Suppress alert notifications"),
           
-          hr(),
+            hr(),
           h5("Alert Thresholds"),
           sliderInput("theta_lapse", "Lapse threshold", 0, 1, 0.3, 0.01),
           sliderInput("theta_high", "High-load threshold", 0, 1, 0.6, 0.01),
           
-          hr(),
+            hr(),
           h5("Display Options"),
           checkboxInput("show_features", "Show feature values", value = TRUE),
           helpText(style = "font-size: 0.85em; color: #666; margin-top: -10px;",
             "Toggle 57-feature biosignal table"),
           
-          hr(),
+            hr(),
           actionButton("reset_session", "Reset Session", class = "btn-warning")
         )
       ),
@@ -189,13 +189,13 @@ ui <- tagList(
           ),
           column(4,
             div(class = "metric-card",
-                h3("🚨 Lapse Probability"),
+                h3("Lapse Probability"),
                 h2(textOutput("lapse_prob_text", inline = TRUE))
             )
           ),
           column(4,
             div(class = "metric-card",
-                h3("📊 Performance"),
+                h3("Performance"),
                 h2(textOutput("performance_text", inline = TRUE))
             )
           )
@@ -262,7 +262,7 @@ ui <- tagList(
   # ========================================================================
   # TAB 3: DIAGNOSTICS
   # ========================================================================
-  tabPanel("📊 Diagnostics",
+  tabPanel("ML Model Diagnostics",
     mod_diagnostics_progressive_ui("diagnostics")
   )
   ) # Close navbarPage
