@@ -817,8 +817,9 @@ server <- function(input, output, session) {
     )
   }, striped = TRUE, hover = TRUE, bordered = TRUE)
   
-  # MODEL OVERVIEW SECTION - MINIMAL TEST
+  # MODEL OVERVIEW SECTION - MINIMAL TEST WITH LOGGING
   output$loso_confusion_matrix <- renderPlot({
+    cat("🔥 RENDERING loso_confusion_matrix\n")
     # Use the exact same plot that works
     plot(1:10, rnorm(10), main = "LOSO Confusion Matrix (Test)", 
          xlab = "Expected Probability", ylab = "Observed Probability",
@@ -828,6 +829,7 @@ server <- function(input, output, session) {
   })
   
   output$loso_pr_curve <- renderPlot({
+    cat("🔥 RENDERING loso_pr_curve\n")
     # Use the exact same plot that works
     plot(1:10, rnorm(10), main = "Precision-Recall Curve (Test)", 
          xlab = "Expected Probability", ylab = "Observed Probability",

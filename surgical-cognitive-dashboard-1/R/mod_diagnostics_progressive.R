@@ -41,7 +41,7 @@ DIAGNOSTICS_SECTIONS <- list(
     title = "📋 Model Overview",
     icon = "📋",
     priority = 3,
-    default_expanded = FALSE,
+    default_expanded = TRUE,  # TEMP: Expanded for testing
     description = "Model architecture, hyperparameters, and feature list. Quick reference for model card information.",
     impact = "MEDIUM - Context for understanding model behavior",
     tour_text = "See what features the model uses and how it's configured."
@@ -52,7 +52,7 @@ DIAGNOSTICS_SECTIONS <- list(
     title = "🔄 Cross-Validation Results",
     icon = "🔄",
     priority = 4,
-    default_expanded = FALSE,
+    default_expanded = TRUE,  # TEMP: Expanded for testing
     description = "Leave-One-Surgeon-Out (LOSO) evaluation with per-fold metrics, confusion matrices, and PR curves.",
     impact = "MEDIUM - Assesses generalization across surgeons",
     tour_text = "Verify the model works for surgeons it hasn't seen before."
@@ -63,7 +63,7 @@ DIAGNOSTICS_SECTIONS <- list(
     title = "⚖️ Feature Importance",
     icon = "⚖️",
     priority = 5,
-    default_expanded = FALSE,
+    default_expanded = TRUE,  # TEMP: Expanded for testing
     description = "XGBoost gain-based importance and SHAP values. Identifies which biosignals drive predictions.",
     impact = "MEDIUM - Explains what the model relies on",
     tour_text = "Discover which biosignals matter most for detecting lapses."
@@ -74,7 +74,7 @@ DIAGNOSTICS_SECTIONS <- list(
     title = "📈 Partial Dependence",
     icon = "📈",
     priority = 6,
-    default_expanded = FALSE,
+    default_expanded = TRUE,  # TEMP: Expanded for testing
     description = "Marginal effect plots showing how each feature influences predictions while holding others constant.",
     impact = "LOW - Deep dive for researchers",
     tour_text = "Explore how changing one biosignal affects predictions."
