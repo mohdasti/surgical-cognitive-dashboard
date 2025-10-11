@@ -113,7 +113,7 @@ build_features_gt <- function(features_now, refs, personal = NULL) {
     mutate(
       # Use the live Unit if available, otherwise ref Unit
       Unit_display = if ("Unit.live" %in% names(cur_data())) Unit.live else Unit.ref,
-      Effect_Size = map2_dbl(Value, baseline_mean, ~effect_size_d(.x, .y, baseline_sd)),
+      Effect_Size = pmap_dbl(list(Value, baseline_mean, baseline_sd), ~effect_size_d(..1, ..2, ..3)),
       Status      = pmap_chr(cur_data_all(), ~{
         # Extract the necessary columns for status determination
         # Column positions may vary, so we'll use named access
