@@ -627,7 +627,7 @@ server <- function(input, output, session) {
   output$lapse_prob_text <- renderText({
     current_data <- realtime_data()
     if (nrow(current_data) == 0) return("0.0%")
-    lapse_prob <- tail(current_data$lapse_prob, 1)
+      lapse_prob <- tail(current_data$lapse_prob, 1)
     sprintf("%.1f%%", lapse_prob * 100)
   })
   
@@ -636,8 +636,8 @@ server <- function(input, output, session) {
   output$performance_text <- renderText({
     current_data <- realtime_data()
     if (nrow(current_data) == 0) return("N/A")
-    recent_data <- tail(current_data, 100)
-    avg_lapse_prob <- mean(recent_data$lapse_prob, na.rm = TRUE)
+      recent_data <- tail(current_data, 100)
+      avg_lapse_prob <- mean(recent_data$lapse_prob, na.rm = TRUE)
     sprintf("%.1f%%", (1 - avg_lapse_prob) * 100)
   })
   
@@ -812,7 +812,9 @@ server <- function(input, output, session) {
   
   output$calibration_stats <- renderUI({
     req(diagnostics$calibration$calib_stats_gt)
-    HTML(as.character(diagnostics$calibration$calib_stats_gt))
+    # Build the gt table and convert to HTML
+    built_table <- gt::as_raw_html(diagnostics$calibration$calib_stats_gt)
+    HTML(built_table)
   })
   
   # MODEL OVERVIEW SECTION - REAL DATA
@@ -903,16 +905,28 @@ server <- function(input, output, session) {
     lapse_probs <- diagnostics$threshold_sandbox$data$lapse_p
     labels <- diagnostics$threshold_sandbox$data$lab_bin
     
-    # Distribution of predicted probabilities
-    hist(lapse_probs, breaks = 50, 
-         main = "Distribution of Lapse Probabilities",
-         xlab = "Lapse Probability", ylab = "Frequency",
-         col = "#3498db", border = "white", xlim = c(0, 1))
+    # Debug info
+    cat("Threshold data loaded:\n")
+    cat("  - lapse_probs length:", length(lapse_probs), "\n")
+    cat("  - labels length:", length(labels), "\n")
+    cat("  - lapse_probs range:", range(lapse_probs), "\n")
+    cat("  - labels unique:", unique(labels), "\n")
     
-    # Mark current threshold
-    abline(v = 0.30, col = "red", lwd = 3, lty = 2)
-    text(0.30, par("usr")[4] * 0.9, "Current\nThreshold\n(0.30)", 
-         col = "red", pos = 4, cex = 0.9)
+    # Distribution of predicted probabilities
+    if (length(lapse_probs) > 0 && all(is.numeric(lapse_probs))) {
+      hist(lapse_probs, breaks = 50, 
+           main = "Distribution of Lapse Probabilities",
+           xlab = "Lapse Probability", ylab = "Frequency",
+           col = "#3498db", border = "white")
+      
+      # Mark current threshold
+      abline(v = 0.30, col = "red", lwd = 3, lty = 2)
+      text(0.30, par("usr")[4] * 0.9, "Current\nThreshold\n(0.30)", 
+           col = "red", pos = 4, cex = 0.9)
+    } else {
+      plot.new()
+      text(0.5, 0.5, "No valid probability data available", cex = 1.2, col = "#666")
+    }
   })
   
   output$threshold_f1_plot <- renderPlot({
@@ -922,8 +936,16 @@ server <- function(input, output, session) {
     lapse_probs <- diagnostics$threshold_sandbox$data$lapse_p
     labels <- as.numeric(diagnostics$threshold_sandbox$data$lab_bin)
     
+    # Check data validity
+    if (length(lapse_probs) == 0 || length(labels) == 0 || 
+        !all(is.numeric(lapse_probs)) || !all(is.numeric(labels))) {
+      plot.new()
+      text(0.5, 0.5, "No valid data for PR curve", cex = 1.2, col = "#666")
+      return()
+    }
+    
     # Calculate metrics across different thresholds
-    thresholds <- seq(0.01, 0.99, 0.01)
+    thresholds <- seq(0.001, 0.999, 0.01)
     precision <- numeric(length(thresholds))
     recall <- numeric(length(thresholds))
     
@@ -948,10 +970,12 @@ server <- function(input, output, session) {
     
     # Mark current threshold (0.30)
     current_idx <- which.min(abs(thresholds - 0.30))
-    points(recall[current_idx], precision[current_idx], 
-           pch = 19, col = "darkgreen", cex = 2)
-    text(recall[current_idx], precision[current_idx], 
-         "  Current\n  (0.30)", pos = 4, col = "darkgreen", cex = 0.9)
+    if (current_idx > 0 && current_idx <= length(thresholds)) {
+      points(recall[current_idx], precision[current_idx], 
+             pch = 19, col = "darkgreen", cex = 2)
+      text(recall[current_idx], precision[current_idx], 
+           "  Current\n  (0.30)", pos = 4, col = "darkgreen", cex = 0.9)
+    }
   })
   
   # Alert Log
