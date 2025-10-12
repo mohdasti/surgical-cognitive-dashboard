@@ -294,8 +294,8 @@ ui <- tagList(
           )
         ),
         
-        # Error Sources Panel (appears on alerts)
-        mod_error_sources_ui("error_sources"),
+        # Error Sources Panel (appears on alerts) - DISABLED (requires shinyjs)
+        # mod_error_sources_ui("error_sources"),
         
         # Real-time Plots (always visible - core functionality)
         div(
@@ -418,12 +418,12 @@ server <- function(input, output, session) {
   alert_active <- reactiveVal(FALSE)
   current_alert_state <- reactiveVal("Normal")
   
-  # Mount error sources module
-  error_sources <- mod_error_sources_server(
-    "error_sources",
-    current_state = current_alert_state,
-    alert_active = alert_active
-  )
+  # Mount error sources module (DISABLED - requires shinyjs)
+  # error_sources <- mod_error_sources_server(
+  #   "error_sources",
+  #   current_state = current_alert_state,
+  #   alert_active = alert_active
+  # )
   
   # Mount experimental controls module
   # DISABLED - Training Lab modules have renderPlot that cause opacity when data loads
@@ -1370,14 +1370,14 @@ server <- function(input, output, session) {
                 highload_prob * 100, thresh$high_load_threshold * 100)
       }
       
-      # Get error sources log entry if logging enabled
-      error_log_entry <- NULL
-      if (isTRUE(input$log_events)) {
-        error_log_entry <- error_sources$get_log_entry()
-        if (!is.null(error_log_entry)) {
-          details_text <- paste0(details_text, " | ", format_error_log(error_log_entry))
-        }
-      }
+      # Get error sources log entry if logging enabled (DISABLED - error_sources module disabled)
+      # error_log_entry <- NULL
+      # if (isTRUE(input$log_events)) {
+      #   error_log_entry <- error_sources$get_log_entry()
+      #   if (!is.null(error_log_entry)) {
+      #     details_text <- paste0(details_text, " | ", format_error_log(error_log_entry))
+      #   }
+      # }
       
       new_alert <- tibble::tibble(
         t = t,
