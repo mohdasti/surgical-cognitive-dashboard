@@ -650,8 +650,12 @@ server <- function(input, output, session) {
   realtime_data <- reactiveVal(tibble::tibble(
     timestamp = numeric(),
     pupil_diameter = numeric(),
+    pupil_tepr = numeric(),
+    blink_rate = numeric(),
     grip_force = numeric(),
     tremor_amplitude = numeric(),
+    hrv_rmssd = numeric(),
+    ambient_noise = numeric(),
     state_probs_normal = numeric(),
     state_probs_highload = numeric(),
     state_probs_lapse = numeric(),
@@ -671,8 +675,12 @@ server <- function(input, output, session) {
     realtime_data(tibble::tibble(
       timestamp = numeric(),
       pupil_diameter = numeric(),
+      pupil_tepr = numeric(),
+      blink_rate = numeric(),
       grip_force = numeric(),
       tremor_amplitude = numeric(),
+      hrv_rmssd = numeric(),
+      ambient_noise = numeric(),
       state_probs_normal = numeric(),
       state_probs_highload = numeric(),
       state_probs_lapse = numeric(),
@@ -859,25 +867,26 @@ server <- function(input, output, session) {
     fatigue_min <- t_current / 60
     grip_cv_pct <- (0.08 + (0.04 * min(1, fatigue_min / 30))) * 100
     
-    # Note: HRV not in simulation yet, using placeholder
-    hrv_rmssd_ms <- 40  # Placeholder until HRV added to simulation
-    
     tibble::tibble(
-      Feature = c("Pupil Diameter", "Grip Force", "Tremor RMS (8–12Hz)", 
-                  "HRV (RMSSD)", "Grip CV%", "Time-on-Task",
+      Feature = c("Pupil Diameter", "Phasic Pupil (TEPR)", "Blink Rate",
+                  "Grip Force", "Tremor RMS (8–12Hz)", 
+                  "HRV (RMSSD)", "Grip CV%", "Time-on-Task", "Ambient Noise",
                   "Normal Prob", "High Load Prob", "Lapse Prob"),
       Value = c(
         latest$pupil_diameter,
+        latest$pupil_tepr,
+        latest$blink_rate,
         latest$grip_force,
         latest$tremor_amplitude,
-        hrv_rmssd_ms,
+        latest$hrv_rmssd,
         grip_cv_pct,
         fatigue_min,
+        latest$ambient_noise,
         latest$state_probs_normal * 100,
         latest$state_probs_highload * 100,
         latest$state_probs_lapse * 100
       ),
-      Unit = c("mm", "N", "μm", "ms", "%", "min", "%", "%", "%")
+      Unit = c("mm", "mm", "bpm", "N", "μm", "ms", "%", "min", "dB", "%", "%", "%")
     )
   })
   
@@ -902,20 +911,21 @@ server <- function(input, output, session) {
       (0.08 + (0.04 * min(1, fatigue_min / 30))) * 100
     })
     
-    # Placeholder HRV trend
-    hrv_trend <- rep(40, nrow(hf))
-    
     tibble::tibble(
-      Feature = c("Pupil Diameter", "Grip Force", "Tremor RMS (8–12Hz)", 
-                  "HRV (RMSSD)", "Grip CV%", "Time-on-Task",
+      Feature = c("Pupil Diameter", "Phasic Pupil (TEPR)", "Blink Rate",
+                  "Grip Force", "Tremor RMS (8–12Hz)", 
+                  "HRV (RMSSD)", "Grip CV%", "Time-on-Task", "Ambient Noise",
                   "Normal Prob", "High Load Prob", "Lapse Prob"),
       Trend = list(
         hf$pupil_diameter,
+        hf$pupil_tepr,
+        hf$blink_rate,
         hf$grip_force,
         hf$tremor_amplitude,
-        hrv_trend,
+        hf$hrv_rmssd,
         grip_cv_vec,
         hf$timestamp / 60,
+        hf$ambient_noise,
         hf$state_probs_normal * 100,
         hf$state_probs_highload * 100,
         hf$state_probs_lapse * 100
@@ -1273,6 +1283,34 @@ server <- function(input, output, session) {
     highload_prob <- highload_prob / total_prob
     lapse_prob <- lapse_prob / total_prob
     
+    # ==== HRV RMSSD (milliseconds) - Evidence from De Louche et al. 2024 ====
+    # Baseline: 40ms, decreases ~20-35% under high cognitive load
+    # HRV reflects parasympathetic (vagal) activity - complementary to pupil
+    hrv_baseline <- 40                                           # 40ms baseline RMSSD
+    hrv_load_reduction <- 0.35 * highload_prob                   # -35% max under high load
+    hrv_fatigue_reduction <- 0.20 * lapse_prob                   # -20% during fatigue
+    hrv_rmssd <- hrv_baseline * (1 - hrv_load_reduction) * (1 - hrv_fatigue_reduction)
+    hrv_rmssd <- hrv_rmssd + rnorm(1, 0, 3)                     # Biological variability (±3ms)
+    hrv_rmssd <- max(20, min(60, hrv_rmssd))                    # Physiological bounds: 20-60ms
+    
+    # ==== BLINK RATE (blinks per minute) - Evidence from Marquart et al. 2015 ====
+    # Baseline: 15-20 blinks/min, decreases ~30% under load, increases ~40% with fatigue
+    blink_baseline <- 17                                         # 17 blinks/min baseline
+    blink_load_suppression <- 0.30 * highload_prob              # -30% under cognitive load
+    blink_fatigue_increase <- 0.40 * lapse_prob                 # +40% during inattention/fatigue
+    blink_rate <- blink_baseline * (1 - blink_load_suppression) * (1 + blink_fatigue_increase)
+    blink_rate <- blink_rate + rnorm(1, 0, 2)                   # Natural variability (±2 blinks)
+    blink_rate <- max(5, min(30, blink_rate))                   # Physiological range: 5-30 blinks/min
+    
+    # ==== AMBIENT NOISE (decibels) - OR environmental stressor ====
+    # Baseline: 55-65 dB in typical OR, spikes during critical moments or equipment alarms
+    # Correlates with stress and may contribute to cognitive load
+    noise_baseline <- 60                                         # 60 dB baseline
+    noise_task_related <- 8 * sin(t/30)                         # Task-related variation (±8 dB)
+    noise_random_spike <- ifelse(runif(1) < 0.05, rnorm(1, 15, 5), 0)  # 5% chance of +15dB spike
+    ambient_noise <- noise_baseline + noise_task_related + noise_random_spike + rnorm(1, 0, 2)
+    ambient_noise <- max(45, min(85, ambient_noise))            # Range: 45-85 dB
+    
     # Determine final state
     thresh <- get_thresholds()
     final_state <- if (lapse_prob > thresh$lapse_threshold) {
@@ -1287,8 +1325,12 @@ server <- function(input, output, session) {
     new_row <- tibble::tibble(
       timestamp = t,
       pupil_diameter = pupil_diameter,
+      pupil_tepr = pupil_tepr,
+      blink_rate = blink_rate,
       grip_force = grip_force,
       tremor_amplitude = tremor_amplitude,
+      hrv_rmssd = hrv_rmssd,
+      ambient_noise = ambient_noise,
       state_probs_normal = normal_prob,
       state_probs_highload = highload_prob,
       state_probs_lapse = lapse_prob,
