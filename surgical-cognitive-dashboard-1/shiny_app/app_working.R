@@ -2,7 +2,7 @@ library(shiny)
 library(bslib)
 library(plotly)
 library(DT)
-library(shinyjs)
+# library(shinyjs)  # DISABLED - not currently used, avoiding dependency
 # library(cicerone)  # DISABLED - causes opacity overlay
 
 # Load the setup
@@ -28,8 +28,8 @@ source("../R/gt_table_utils.R")
 source("../R/mod_gt_live_table.R")
 
 ui <- tagList(
-  # Initialize shinyjs
-  shinyjs::useShinyjs(),
+  # Initialize shinyjs (DISABLED - not currently used)
+  # shinyjs::useShinyjs(),
   
   # Initialize cicerone for guided tour (DISABLED - missing banner module elements)
   # cicerone::use_cicerone(),
