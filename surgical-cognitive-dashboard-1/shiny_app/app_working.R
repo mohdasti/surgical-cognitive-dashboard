@@ -639,8 +639,8 @@ server <- function(input, output, session) {
   #   tour_guide$init()$start()
   # })
   
-  # Initialize popovers for help icons
-  init_popovers(session)
+  # Initialize popovers for help icons (DISABLED - requires shinyjs)
+  # init_popovers(session)
   
   # ========================================================================
   # END GUIDED TOUR INTEGRATION
