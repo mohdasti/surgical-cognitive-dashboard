@@ -314,24 +314,24 @@ mod_error_sources_server <- function(id, current_state, alert_active) {
     observeEvent(input$toggle_collapse, {
       collapsed(!collapsed())
       
-      # Toggle icon and content visibility
-      shinyjs::toggle("error_content")
+      # Toggle icon and content visibility (DISABLED - requires shinyjs)
+      # shinyjs::toggle("error_content")
       
-      if (collapsed()) {
-        shinyjs::html("collapse_icon", "▶")
-      } else {
-        shinyjs::html("collapse_icon", "▼")
-      }
+      # if (collapsed()) {
+      #   shinyjs::html("collapse_icon", "▶")
+      # } else {
+      #   shinyjs::html("collapse_icon", "▼")
+      # }
     })
     
-    # Show/hide panel based on alert status - prevent rapid changes
-    observeEvent(alert_active(), {
-      if (isTRUE(alert_active())) {
-        shinyjs::show("error_panel_container")
-      } else {
-        shinyjs::hide("error_panel_container")
-      }
-    }, ignoreNULL = TRUE, ignoreInit = TRUE)
+    # Show/hide panel based on alert status - prevent rapid changes (DISABLED - requires shinyjs)
+    # observeEvent(alert_active(), {
+    #   if (isTRUE(alert_active())) {
+    #     shinyjs::show("error_panel_container")
+    #   } else {
+    #     shinyjs::hide("error_panel_container")
+    #   }
+    # }, ignoreNULL = TRUE, ignoreInit = TRUE)
     
     # Current state badge
     output$current_state_badge <- renderUI({
