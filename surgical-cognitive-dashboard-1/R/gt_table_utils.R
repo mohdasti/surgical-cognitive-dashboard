@@ -255,6 +255,13 @@ build_features_gt <- function(features_now, refs, personal = NULL) {
         )
       )
   }
+  
+  # Force text color to BLACK for better readability (override data_color's default)
+  g <- g %>%
+    tab_style(
+      style = cell_text(color = "#000000", weight = "bold"),
+      locations = cells_body(columns = "Value_fmt")
+    )
 
   # Bold large effect sizes
   g <- g %>%
