@@ -87,6 +87,7 @@ status_icon_html <- function(status) {
 # ---------- Effect size ----------
 # Vectorized version - handles vectors of values, means, and SDs
 effect_size_d <- function(val, mean0, sd0) {
+  # Handle NA and zero SD
   ifelse(is.na(sd0) | sd0 <= 0, NA_real_, (val - mean0) / sd0)
 }
 
@@ -291,12 +292,12 @@ build_features_gt <- function(features_now, refs, personal = NULL) {
         )
     })
   } else {
-    # fallback: show empty space if gtExtras not installed
+    # fallback: show dash if gtExtras not available
     g <- g %>%
       text_transform(
         locations = cells_body(columns = "Trend"),
         fn = function(x) {
-          rep("&nbsp;", length(x))
+          rep("—", length(x))
         }
       )
   }

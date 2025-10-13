@@ -326,8 +326,10 @@ ui <- tagList(
         ),
         
         # Feature Values Table (GT version with literature ranges)
-        conditionalPanel(
-          condition = "input.show_features",
+        # Always render but toggle visibility for immediate display
+        div(
+          id = "gt_features_container",
+          style = "display: block;",  # Show by default since checkbox is checked
           gt_live_table_ui("gtlive", title = "Real-time Feature Values")
         ),
         
@@ -854,14 +856,29 @@ server <- function(input, output, session) {
   # Build features_reactive for current window
   features_reactive <- reactive({
     current_data <- realtime_data()
+    
+    # If no data yet, show baseline values from literature
     if (nrow(current_data) == 0) {
       return(tibble::tibble(
-        Feature = character(0),
-        Value = numeric(0),
-        Unit = character(0)
+        Feature = c("Pupil Diameter", "Grip Force", "Tremor RMS (8–12Hz)", 
+                    "HRV (RMSSD)", "Grip CV%", "Time-on-Task",
+                    "Normal Prob", "High Load Prob", "Lapse Prob"),
+        Value = c(
+          3.5,   # Baseline pupil (literature)
+          3.0,   # Baseline grip (literature)
+          100,   # Baseline tremor (literature)
+          40,    # Baseline HRV RMSSD
+          8,     # Fresh grip CV%
+          0,     # Starting time
+          100,   # Normal state initially
+          0,     # No high load initially
+          0      # No lapse initially
+        ),
+        Unit = c("mm", "N", "μm", "ms", "%", "min", "%", "%", "%")
       ))
     }
     
+    # Live data available - extract current values
     latest <- tail(current_data, 1)
     t_current <- latest$timestamp
     fatigue_min <- t_current / 60
@@ -894,9 +911,12 @@ server <- function(input, output, session) {
   trends_reactive <- reactive({
     current_data <- realtime_data()
     if (nrow(current_data) == 0) {
+      # Return empty trends for initial display
       return(tibble::tibble(
-        Feature = character(0),
-        Trend = list()
+        Feature = c("Pupil Diameter", "Grip Force", "Tremor RMS (8–12Hz)", 
+                    "HRV (RMSSD)", "Grip CV%", "Time-on-Task",
+                    "Normal Prob", "High Load Prob", "Lapse Prob"),
+        Trend = replicate(9, numeric(0), simplify = FALSE)
       ))
     }
     
@@ -942,6 +962,11 @@ server <- function(input, output, session) {
     personal_reactive = reactive({ NULL }),  # Can add personal baselines later
     refs_path = "../data/reference_ranges.csv"
   )
+  
+  # Toggle GT table visibility based on checkbox
+  observeEvent(input$show_features, {
+    shinyjs::toggle("gt_features_container", condition = input$show_features)
+  }, ignoreNULL = FALSE, ignoreInit = FALSE)
   
   # ========================================================================
   # DIAGNOSTIC PLOTS - REAL DATA FROM .RDS FILES
