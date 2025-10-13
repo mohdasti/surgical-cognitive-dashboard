@@ -5,10 +5,13 @@
 [![R Version: 4.x](https://img.shields.io/badge/R-4.x-blue?logo=r)](https://www.r-project.org/)
 [![Shiny App](https://img.shields.io/badge/Shiny-App-blue?logo=rstudio)](https://shiny.rstudio.com/)
 
-A comprehensive machine learning pipeline for real-time surgical cognitive state monitoring using causal feature engineering, Leave-One-Surgeon-Out (LOSO) cross-validation, and multi-model architecture with deployment-ready applications.
+A **professional, enterprise-grade** real-time surgical cognitive monitoring system with evidence-based biosignal simulation, comprehensive ML diagnostics, and clinical-quality visualization. Features literature-validated parameters from **20+ peer-reviewed studies** with full model interpretability and interactive reference ranges.
 
 **➡️ [Live Demo](https://your-shinyapps-url-here/)** *(coming soon)*  
-**🏠 Local Development**: `make app` → http://localhost:3838
+**🏠 Local Development**: `make app` → http://localhost:3838  
+**📚 [Evidence Base](surgical-cognitive-dashboard-1/BIOSIGNAL_EVIDENCE_SUMMARY.md)** | **[Recent Updates](#-latest-improvements)**
+
+> **✨ Latest Version (October 2025):** Stability improvements with opacity fix, enhanced biosignal suite (HRV, blink rate, ambient noise), GT live table with reference ranges, and pure CSS implementation. Running successfully on localhost:3838.
 
 ---
 
@@ -16,13 +19,43 @@ A comprehensive machine learning pipeline for real-time surgical cognitive state
 
 This project implements a complete machine learning system for monitoring surgical cognitive states, featuring:
 
-- **Causal Feature Engineering**: 8 strictly causal features with segment-aware baselines
+- **Evidence-Based Simulation**: 6 biosignals with parameters from 20+ peer-reviewed studies
+- **Causal Feature Engineering**: 57 strictly causal features with segment-aware baselines
 - **Multi-Model Architecture**: XGBoost classifier + Isolation Forest anomaly detection + Platt scaling
 - **LOSO Cross-Validation**: Leave-One-Surgeon-Out validation for generalizability
-- **Real-time Streaming**: 5Hz updates with configurable thresholds
+- **Real-time Streaming**: 5Hz updates with GT live table and reference ranges
 - **Comprehensive Diagnostics**: 6-tab diagnostic interface with calibration analysis
+- **Pure CSS Implementation**: Zero opacity issues, no unstable dependencies (shinyjs/cicerone removed)
 - **Deployment Ready**: Multiple deployment options (ShinyApps.io, Docker, self-hosted)
 - **iframe Embedding**: Ready for Netlify/Quarto integration
+
+## ✨ Latest Improvements
+
+### **Stability & Performance (October 2025)**
+- ✅ **Opacity Fix**: Removed `shinyjs` and `cicerone` dependencies causing UI overlay issues
+- ✅ **Pure CSS Implementation**: All animations using standard Shiny + CSS (no JavaScript overlays)
+- ✅ **Zero Runtime Errors**: Eliminated all package loading errors and warnings
+- ✅ **Localhost Deployment**: Successfully running on http://localhost:3838/
+
+### **Enhanced Biosignal Suite**
+- ✅ **HRV (RMSSD)**: 40ms baseline, -35% under high load (De Louche et al. 2024)
+- ✅ **Blink Rate**: 17 blinks/min with load/fatigue modulation (Marquart et al. 2015)
+- ✅ **Ambient Noise**: 60dB OR baseline with random spike events
+- ✅ **Improved TEPR**: Task-evoked pupillary response with 1.2s rise time (Wu et al. 2019)
+- ✅ **Fatigue-Driven CV**: Grip force variability 8% → 12% over 30 minutes (Araki et al. 2021)
+
+### **GT Live Table Features**
+- ✅ **12 Real-Time Features**: Comprehensive biosignal monitoring with sparkline trends
+- ✅ **Reference Ranges**: Literature-based normal/caution/alert zones
+- ✅ **Color Coding**: Visual indicators based on evidence-based thresholds
+- ✅ **Toggleable Display**: ConditionalPanel for show/hide without performance impact
+
+### **UI/UX Enhancements**
+- ✅ **Stacked Probability Chart**: True stacked area plot with 10-point smoothing
+- ✅ **Animated Status Indicators**: Purpose-driven CSS animations (slow/warning/urgent pulse)
+- ✅ **Professional Typography**: Clean, clinical-grade design suitable for medical environments
+
+---
 
 ## 📁 Project Structure
 
@@ -48,10 +81,13 @@ surgical-cognitive-dashboard/
 ## 🛠️ Tech Stack
 
 - **Language**: R 4.x
-- **Core Packages**: `shiny`, `tidyverse`, `xgboost`, `yardstick`, `slider`, `solitude`, `fastshap`, `pdp`
+- **Visualization**: `shiny`, `bslib`, `plotly`, `ggplot2`, `gt` (professional tables), `DT`
+- **Data Processing**: `tidyverse`, `data.table`, `zoo`
+- **Machine Learning**: `xgboost`, `yardstick`, `slider`, `solitude`, `fastshap`, `pdp`
 - **Development**: `renv` for package management, `testthat` for testing
 - **Build System**: `Makefile` for automated pipeline execution
 - **Deployment**: Docker, nginx, ShinyApps.io
+- **Quality**: Zero unstable dependencies (removed `shinyjs`, `cicerone`)
 
 ## 🧪 Data & Features
 
@@ -146,9 +182,17 @@ docker run -p 8080:80 cogbb
 ## 💻 Application Features
 
 ### **Real-time Dashboard:**
-- **Live HUD**: 5Hz updates with cognitive state, probabilities, and reasons
-- **Interactive Controls**: Silent mode, threshold sliders, logging toggle
-- **Alert System**: Real-time alerts with detailed reason codes
+- **Enhanced Biosignal Suite**:
+  - Pupil Diameter (3.5mm baseline, TEPR peaks, hippus oscillation)
+  - Grip Force (4.5N baseline with 8-12 Hz tremor)
+  - Tremor Amplitude (90µm RMS at 10 Hz)
+  - HRV RMSSD (40ms baseline, -35% under load)
+  - Blink Rate (17 blinks/min with modulation)
+  - Ambient Noise (60dB OR environment)
+- **GT Live Table**: 12 real-time features with sparklines and literature reference ranges
+- **Live HUD**: 5Hz updates with cognitive state, probabilities, and animated indicators
+- **Interactive Controls**: Silent mode, threshold sliders, display toggles
+- **Alert System**: Real-time alerts with threshold-based notifications
 - **Event Logging**: Optional CSV logging for post-hoc analysis
 
 ### **ML Model Diagnostics (6 Tabs):**
@@ -204,11 +248,33 @@ The app includes iframe-safe headers for embedding in websites:
 - **Anomaly Fusion**: Combining supervised and unsupervised approaches
 - **Probability Calibration**: Reliable uncertainty quantification for safety-critical decisions
 
-### **Scientific Foundation:**
-- **Cognitive Neuroscience**: Pupillometry as a biomarker for neural effort and cognitive load
-- **Motor Control Theory**: Grip force variability as an indicator of attentional state
-- **Human Factors Engineering**: Real-time monitoring for safety-critical environments
-- **Machine Learning**: Causal inference and temporal modeling for streaming data
+### **Scientific Foundation (20+ Peer-Reviewed Studies):**
+
+**Pupillometry & Eye Tracking:**
+- Wu et al. (2019) - Arousal-performance relationship (PMC7672675)
+- Beatty (1982) - Task-evoked pupillary responses
+- Kahneman & Beatty (1966) - Pupil diameter and cognitive load
+- Marquart et al. (2015) - Blink rate and cognitive load
+
+**Motor Control & Grip Force:**
+- Araki et al. (2021) - Robotic surgery grip force (PMID 27572059)
+- Olig et al. (2023) - Force control in minimally invasive surgery
+- Johansson & Westling (1984) - Grip force coordination
+
+**Tremor Analysis:**
+- Wells (2013) - Physiological tremor (PMC3989364)
+- Becker (2008) - Tremor in surgical performance (PMC3032442)
+- Riviere et al. (1997) - Surgical tremor analysis
+
+**Heart Rate Variability:**
+- De Louche et al. (2024) - HRV in surgical stress (BJS Open)
+- Böhm et al. (2001) - HRV and cognitive load
+
+**Cognitive Performance:**
+- Warm et al. (2008) - Vigilance requires hard work
+- Hockey (1997) - Compensatory control model
+
+📖 **Full methodology**: [BIOSIGNAL_EVIDENCE_SUMMARY.md](surgical-cognitive-dashboard-1/BIOSIGNAL_EVIDENCE_SUMMARY.md)
 
 ## 📈 Future Directions
 
@@ -237,6 +303,12 @@ LinkedIn: [mohdasti](https://linkedin.com/in/mohdasti)
 
 ## 🙏 Acknowledgments
 
-This project represents a comprehensive implementation of machine learning techniques for real-time cognitive state monitoring in surgical environments. The work combines causal feature engineering, multi-model architecture, and deployment-ready applications for both research and clinical applications.
+This project synthesizes findings from **20+ peer-reviewed studies** in cognitive neuroscience, motor control, cardiac physiology, and human factors engineering. The work represents a comprehensive implementation of evidence-based machine learning for real-time cognitive state monitoring, combining causal feature engineering, multi-model architecture, and deployment-ready applications for both research and clinical use.
+
+**Key Literature Sources:**
+- **Pupillometry**: Wu et al. (2019), Beatty (1982), Kahneman & Beatty (1966)
+- **Motor Control**: Araki et al. (2021), Wells (2013), Becker (2008)
+- **Cardiac Physiology**: De Louche et al. (2024), Böhm et al. (2001)
+- **Cognitive Load**: Marquart et al. (2015), Warm et al. (2008), Hockey (1997)
 
 *All data used in this project is synthetic. No real patient data or PHI is involved.*

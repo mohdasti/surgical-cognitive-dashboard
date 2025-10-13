@@ -118,3 +118,4 @@ Then uncomment all the `shinyjs` lines we disabled.
 
 **Status:** ✅ All opacity-causing code removed. App should work perfectly!
 
+
