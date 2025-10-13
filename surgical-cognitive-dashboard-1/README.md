@@ -1,6 +1,6 @@
 # Surgical Cognitive Dashboard
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Status: Research Prototype](https://img.shields.io/badge/Status-Research_Prototype-blue.svg)](https://github.com/mohdasti/surgical-cognitive-dashboard)
 [![R Version: 4.x](https://img.shields.io/badge/R-4.x-blue?logo=r)](https://www.r-project.org/)
 [![Shiny App](https://img.shields.io/badge/Shiny-App-blue?logo=rstudio)](https://shiny.rstudio.com/)
@@ -474,7 +474,9 @@ install.packages(c("shiny", "bslib", "plotly", "tidyverse",
 
 ## 📜 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the GNU Affero General Public License v3.0 (AGPL-3.0) - see the [LICENSE](LICENSE) file for details.
+
+**Why AGPL v3?** This license ensures that any modifications to this surgical safety monitoring system remain open source, even when deployed as a web service. This is critical for patient safety - all improvements must be shared with the medical and research community.
 
 ---
 
