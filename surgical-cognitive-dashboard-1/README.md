@@ -8,9 +8,13 @@
 
 A **professional, enterprise-grade** real-time surgical cognitive monitoring system with evidence-based biosignal simulation, comprehensive ML diagnostics, and clinical-quality visualization. Features literature-validated parameters from **20+ peer-reviewed studies** with full model interpretability and interactive reference ranges.
 
-**➡️ [Run Locally](#-getting-started)** | **[View Evidence Summary](BIOSIGNAL_EVIDENCE_SUMMARY.md)** | **[Recent Updates](#-recent-improvements--bug-fixes)**
+**➡️ [Run Locally](#-getting-started)** | **[View Evidence Summary](BIOSIGNAL_EVIDENCE_SUMMARY.md)** | **[Recent Updates](#-recent-improvements--bug-fixes)** | **🧪 [Training Lab](https://github.com/mohdasti/surgical-training-lab)**
 
 > **✨ Latest Version (October 2025):** Stability improvements with opacity fix, enhanced biosignal suite (HRV, blink rate, ambient noise), GT live table with reference ranges, and pure CSS implementation. Running successfully on localhost:3838.
+
+> **🎓 For Research & Education:** Check out the [Surgical Training Lab](https://github.com/mohdasti/surgical-training-lab) to explore cognitive theory paradigms (AGT, Resource Competition, Vigilance Decrement).
+
+📖 **[Comparison Table](COMPARISON.md)** | **[Project Ecosystem](PROJECT_ECOSYSTEM.md)** | **[Training Lab Setup Guide](https://github.com/mohdasti/surgical-training-lab/blob/main/GITHUB_PROJECT_SETUP.md)**
 
 ---
 

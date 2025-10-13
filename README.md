@@ -15,6 +15,32 @@ A **professional, enterprise-grade** real-time surgical cognitive monitoring sys
 
 ---
 
+## 🆚 Which Tool Should I Use?
+
+| **Use Case** | **👉 Recommended Tool** |
+|-------------|------------------------|
+| **Clinical/Production Monitoring** | **🏥 This Dashboard** (surgical-cognitive-dashboard) |
+| **Research & Exploration** | **🧪 [Training Lab](https://github.com/mohdasti/surgical-training-lab)** |
+| **Teaching Cognitive Theory** | **🧪 [Training Lab](https://github.com/mohdasti/surgical-training-lab)** |
+| **Real-time Patient Safety** | **🏥 This Dashboard** (surgical-cognitive-dashboard) |
+| **Algorithm Prototyping** | **🧪 [Training Lab](https://github.com/mohdasti/surgical-training-lab)** |
+| **Deployment to Hospitals** | **🏥 This Dashboard** (surgical-cognitive-dashboard) |
+
+### **🧪 [Surgical Training Lab](https://github.com/mohdasti/surgical-training-lab)** (Companion Tool)
+
+An interactive research and educational tool featuring three cognitive theory paradigms:
+- **Inverted-U Zone Adjuster** (Adaptive Gain Theory)
+- **Unified Sensitivity** (Resource Competition Model)
+- **Fatigue-Adaptive Thresholds** (Vigilance Decrement)
+
+**Perfect for:** Graduate courses, research labs, hypothesis testing, and understanding cognitive mechanisms.
+
+**Status:** Experimental - May have opacity issues, prioritizes features over optimization.
+
+📖 **[Detailed Comparison Table](surgical-cognitive-dashboard-1/COMPARISON.md)** | **[Project Ecosystem Overview](surgical-cognitive-dashboard-1/PROJECT_ECOSYSTEM.md)**
+
+---
+
 ## 🚀 Project Overview
 
 This project implements a complete machine learning system for monitoring surgical cognitive states, featuring:
