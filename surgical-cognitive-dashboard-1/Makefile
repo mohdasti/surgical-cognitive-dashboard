@@ -1,4 +1,4 @@
-.PHONY: setup simulate features train anomaly shap eval diagnostics app local gallery thumbs
+.PHONY: setup simulate features train anomaly shap eval diagnostics app local gallery thumbs features-snapshot
 
 setup:
 	Rscript -e "source('scripts/00_setup.R'); renv::snapshot(prompt=FALSE)"
@@ -41,3 +41,8 @@ thumbs:
 	@echo "🖼️  Generating thumbnails..."
 	Rscript scripts/91_thumbs.R
 	@echo "✅ Thumbnail generation complete!"
+
+features-snapshot:
+	@echo "📊 Generating features snapshot with trends..."
+	Rscript scripts/92_export_features_snapshot.R
+	@echo "✅ Features snapshot generation complete!"
