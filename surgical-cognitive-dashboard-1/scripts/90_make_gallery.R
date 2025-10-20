@@ -1,12 +1,12 @@
 #!/usr/bin/env Rscript
 # Deterministic Gallery Generator for Surgical Cognitive Dashboard
-# Renders app plots without Shiny runtime for consistent case study images
+# Renders EXACT app plots without Shiny runtime for consistent case study images
 
 # Load required libraries
 library(ggplot2)
 library(dplyr)
 library(tidyr)
-library(gt)
+library(plotly)
 library(magrittr)
 library(zoo)
 library(scales)
@@ -17,18 +17,20 @@ source("R/theme_md.R")
 source("R/feature_hrv.R")
 source("R/calibration_metrics.R")
 
-# Check if we have the required data files
-demo_data_path <- "inst/demo/demo_data_10min.csv"
-enhanced_data_path <- "data/processed/sim_stream_enhanced.csv.gz"
-model_path <- "data/processed/xgb_loso_models.rds"
+# Source app constants and helpers
+source("R/ui_constants.R")
 
-cat("🎨 Generating deterministic gallery for case study...\n")
+cat("🎨 Generating EXACT app plots for case study...\n")
 
 # Create output directories
 dir.create("case_study/images", showWarnings = FALSE, recursive = TRUE)
 dir.create("case_study/thumbs", showWarnings = FALSE, recursive = TRUE)
 
-# Load or generate data
+# Load or generate data (same as app)
+demo_data_path <- "inst/demo/demo_data_10min.csv"
+enhanced_data_path <- "data/processed/sim_stream_enhanced.csv.gz"
+model_path <- "data/processed/xgb_loso_models.rds"
+
 if (file.exists(demo_data_path)) {
   cat("📊 Loading demo data from", demo_data_path, "\n")
   data <- read.csv(demo_data_path)
@@ -63,17 +65,11 @@ if (file.exists(demo_data_path)) {
     data$state_probs_lapse <- data$state_probs_lapse / total_prob
   }
   
-} else if (file.exists(enhanced_data_path)) {
-  cat("📊 Loading enhanced simulation data from", enhanced_data_path, "\n")
-  data <- read.csv(enhanced_data_path)
 } else {
   cat("📊 Generating simulation data (no existing data found)\n")
-  # Set seed for reproducibility
   set.seed(42)
-  
-  # Generate basic simulation data (simplified version)
   n_samples <- 3000
-  time_points <- seq(0, 600, length.out = n_samples) # 10 minutes
+  time_points <- seq(0, 600, length.out = n_samples)
   
   data <- data.frame(
     timestamp = time_points,
@@ -107,214 +103,211 @@ save_plot <- function(plot, filename, width = 1600/96, height = 900/96, dpi = 96
   cat("✅ Saved:", filename, "\n")
 }
 
-# 1. Monitor Cards Plot
-cat("🎯 Creating monitor cards plot...\n")
-monitor_cards_plot <- function() {
-  # Create a composite plot showing the MSI and CLI cards
-  # This would typically be a grid of cards, but for simplicity we'll create
-  # a representative plot showing the key metrics
-  
-  latest_data <- tail(data, 1)
-  
-  # Calculate MSI (simplified)
-  tremor_scaled <- scale(data$tremor_amplitude)
-  tremor_z <- if (is.null(dim(tremor_scaled))) tremor_scaled else tremor_scaled[,1]
-  grip_cv <- abs(rnorm(nrow(data), 0, 0.1)) * 100
-  grip_scaled <- scale(grip_cv)
-  grip_z <- if (is.null(dim(grip_scaled))) grip_scaled else grip_scaled[,1]
-  msi_z <- -0.6 * tremor_z - 0.4 * grip_z
-  msi_100 <- scales::rescale(msi_z, to = c(0, 100))
-  
-  # Calculate CLI (simplified)
-  pupil_scaled <- scale(data$pupil_diameter)
-  pupil_z <- if (is.null(dim(pupil_scaled))) pupil_scaled else pupil_scaled[,1]
-  hrv_scaled <- scale(data$hrv_rmssd)
-  hrv_z <- if (is.null(dim(hrv_scaled))) hrv_scaled else hrv_scaled[,1]
-  cli_z <- 0.6 * pupil_z - 0.4 * hrv_z
-  cli_100 <- scales::rescale(cli_z, to = c(0, 100))
-  
-  # Create a summary plot
-  summary_df <- data.frame(
-    Metric = c("Motor Steadiness Index", "Cognitive Load Index"),
-    Value = c(tail(msi_100, 1), tail(cli_100, 1)),
-    Status = c(ifelse(tail(msi_100, 1) > 60, "Normal", "Elevated"),
-               ifelse(tail(cli_100, 1) > 60, "High Load", "Moderate"))
-  )
-  
-  ggplot(summary_df, aes(x = Metric, y = Value, fill = Status)) +
-    geom_col(alpha = 0.8) +
-    geom_text(aes(label = paste0(round(Value), "/100")), 
-              vjust = -0.5, size = 4, fontface = "bold") +
-    scale_fill_manual(values = case_study_state_colors) +
-    labs(
-      title = "Real-Time Cognitive Monitoring Cards",
-      subtitle = "Motor Steadiness Index and Cognitive Load Index",
-      x = "Metric",
-      y = "Score (0-100)"
-    ) +
-    theme_case_study() +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+# Helper function for rgba colors (from app)
+rgba <- function(color, alpha) {
+  rgb_col <- col2rgb(color)
+  rgb(rgb_col[1], rgb_col[2], rgb_col[3], alpha = alpha * 255, maxColorValue = 255)
 }
 
-save_plot(monitor_cards_plot(), "monitor_cards.png")
-
-# 2. Monitor Streams Plot (with HRV)
-cat("📈 Creating monitor streams plot with HRV...\n")
-monitor_streams_plot <- function() {
-  # Create time series plots for key biosignals
-  plot_data <- data %>%
-    mutate(time_min = timestamp / 60) %>%
-    tail(1800) # Last 6 minutes
+# 1. Pupil Plot (EXACT from app)
+cat("👁️  Creating pupil plot (exact from app)...\n")
+pupil_plot <- function() {
+  current_data <- tail(data, 1800) # Last 6 minutes
   
-  # Pupil plot
-  p1 <- ggplot(plot_data, aes(x = time_min, y = pupil_diameter)) +
-    geom_line(color = case_study_colors["accent"], linewidth = 0.8) +
+  ggplot(current_data, aes(x = timestamp/60, y = pupil_diameter)) +
+    geom_line(color = '#3498db', linewidth = 2) +
     labs(
-      title = "Pupil Diameter (TEPR)",
-      subtitle = "Task-evoked pupillary response",
-      x = "Time (min)",
+      title = "Pupil Diameter (photopic, TEPR)",
+      x = "Time (minutes)",
       y = "Diameter (mm)"
     ) +
+    ylim(2.5, 5.0) +
     theme_case_study()
+}
+
+save_plot(pupil_plot(), "pupil_plot.png")
+
+# 2. HRV Plot (EXACT from app)
+cat("❤️  Creating HRV plot (exact from app)...\n")
+hrv_plot <- function() {
+  current_data <- tail(data, 1800)
   
-  # HRV plot with normal range
-  hrv_baseline <- mean(plot_data$hrv_rmssd, na.rm = TRUE)
-  hrv_sd <- sd(plot_data$hrv_rmssd, na.rm = TRUE)
-  normal_range <- c(hrv_baseline - hrv_sd, hrv_baseline + hrv_sd)
-  
-  p2 <- ggplot(plot_data, aes(x = time_min, y = hrv_rmssd)) +
-    geom_ribbon(aes(ymin = normal_range[1], ymax = normal_range[2]), 
-                alpha = 0.2, fill = case_study_colors["ok"]) +
-    geom_line(color = case_study_colors["accent"], linewidth = 0.8) +
+  ggplot(current_data, aes(x = timestamp/60, y = hrv_rmssd)) +
+    geom_line(color = '#0ea5b7', linewidth = 2) +
     labs(
       title = "Heart Rate Variability (RMSSD)",
-      subtitle = "Lower RMSSD typically accompanies sustained cognitive load",
+      subtitle = "Lower RMSSD ↘ typically accompanies sustained cognitive load",
       x = "Time (min)",
       y = "RMSSD (ms)"
     ) +
     theme_case_study()
-  
-  # Combine plots
-  if (requireNamespace("patchwork", quietly = TRUE)) {
-    combined <- patchwork::wrap_plots(p1, p2, ncol = 1)
-    return(combined)
-  } else {
-    # Fallback: return pupil plot as main
-    return(p1)
-  }
 }
 
-save_plot(monitor_streams_plot(), "monitor_streams.png")
+save_plot(hrv_plot(), "hrv_plot.png")
 
-# 3. Monitor Probabilities Plot
-cat("📊 Creating monitor probabilities plot...\n")
-monitor_probs_plot <- function() {
-  plot_data <- data %>%
-    mutate(time_min = timestamp / 60) %>%
-    tail(1800)
+# 3. State Probability Plot (EXACT from app)
+cat("📊 Creating state probability plot (exact from app)...\n")
+state_prob_plot <- function() {
+  current_data <- tail(data, 1800)
   
-  ggplot(plot_data, aes(x = time_min)) +
-    geom_area(aes(y = state_probs_normal, fill = "Normal"), alpha = 0.8) +
-    geom_area(aes(y = state_probs_normal + state_probs_highload, fill = "High Load"), alpha = 0.8) +
-    geom_area(aes(y = state_probs_normal + state_probs_highload + state_probs_lapse, fill = "Attentional Lapse"), alpha = 0.8) +
-    scale_fill_manual(values = case_study_state_colors) +
+  # Apply smoothing (rolling average) to reduce noise - EXACT from app
+  window_size <- 10
+  if (nrow(current_data) >= window_size) {
+    current_data <- current_data %>%
+      mutate(
+        state_probs_normal_smooth = zoo::rollmean(state_probs_normal, k = window_size, fill = NA, align = "right"),
+        state_probs_highload_smooth = zoo::rollmean(state_probs_highload, k = window_size, fill = NA, align = "right"),
+        state_probs_lapse_smooth = zoo::rollmean(state_probs_lapse, k = window_size, fill = NA, align = "right")
+      ) %>%
+      drop_na()
+  } else {
+    current_data <- current_data %>%
+      mutate(
+        state_probs_normal_smooth = state_probs_normal,
+        state_probs_highload_smooth = state_probs_highload,
+        state_probs_lapse_smooth = state_probs_lapse
+      )
+  }
+  
+  # Create stacked area chart - EXACT from app
+  ggplot(current_data, aes(x = timestamp/60)) +
+    geom_area(aes(y = state_probs_normal_smooth), fill = rgba(COLORS$optimal, 0.8)) +
+    geom_area(aes(y = state_probs_normal_smooth + state_probs_highload_smooth), fill = rgba(COLORS$high_load, 0.8)) +
+    geom_area(aes(y = state_probs_normal_smooth + state_probs_highload_smooth + state_probs_lapse_smooth), fill = rgba(COLORS$lapse, 0.8)) +
     labs(
       title = "Cognitive State Distribution (Stacked Probabilities)",
-      subtitle = "Real-time probability estimates for cognitive states",
-      x = "Time (min)",
-      y = "Probability",
-      fill = "State"
+      x = "Time (minutes)",
+      y = "Probability"
     ) +
-    theme_case_study()
-}
-
-save_plot(monitor_probs_plot(), "monitor_probs.png")
-
-# 4. Monitor Alerts Plot
-cat("🚨 Creating monitor alerts plot...\n")
-monitor_alerts_plot <- function() {
-  # Create alert thresholds and states
-  plot_data <- data %>%
-    mutate(
-      time_min = timestamp / 60,
-      lapse_threshold = 0.3,
-      highload_threshold = 0.6,
-      alert_state = case_when(
-        state_probs_lapse > lapse_threshold ~ "Lapse Alert",
-        state_probs_highload > highload_threshold ~ "High Load Alert",
-        TRUE ~ "Normal"
-      )
-    ) %>%
-    tail(1800)
-  
-  ggplot(plot_data, aes(x = time_min, y = state_probs_lapse, color = alert_state)) +
-    geom_line(linewidth = 0.8) +
-    geom_hline(yintercept = 0.3, linetype = "dashed", color = case_study_colors["crit"]) +
-    geom_hline(yintercept = 0.6, linetype = "dashed", color = case_study_colors["warn"]) +
-    scale_color_manual(values = c(
-      "Normal" = case_study_colors["ok"],
-      "High Load Alert" = case_study_colors["warn"],
-      "Lapse Alert" = case_study_colors["crit"]
-    )) +
-    labs(
-      title = "Alert System Monitoring",
-      subtitle = "Threshold-based alerts for cognitive state changes",
-      x = "Time (min)",
-      y = "Lapse Probability",
-      color = "Alert State"
-    ) +
-    theme_case_study()
-}
-
-save_plot(monitor_alerts_plot(), "monitor_alerts.png")
-
-# 5. Features GT Table
-cat("📋 Creating features GT table...\n")
-features_gt_plot <- function() {
-  # Create a representative features table
-  features_df <- data.frame(
-    Feature = c("Pupil Diameter", "HRV (RMSSD)", "Grip Force", "Tremor RMS", 
-                "Grip CV%", "Time-on-Task", "Normal Prob", "High Load Prob", "Lapse Prob"),
-    Value = c(
-      round(tail(data$pupil_diameter, 1), 2),
-      round(tail(data$hrv_rmssd, 1), 1),
-      round(tail(data$grip_force, 1), 2),
-      round(tail(data$tremor_amplitude, 1), 1),
-      round(abs(rnorm(1, 0, 0.1)) * 100, 1),
-      round(tail(data$timestamp, 1) / 60, 1),
-      round(tail(data$state_probs_normal, 1), 3),
-      round(tail(data$state_probs_highload, 1), 3),
-      round(tail(data$state_probs_lapse, 1), 3)
-    ),
-    Unit = c("mm", "ms", "N", "μm", "%", "min", "", "", ""),
-    Status = c("Normal", "Normal", "Normal", "Normal", "Normal", 
-               "Normal", "Normal", "Normal", "Normal")
-  )
-  
-  # Create a ggplot table instead of GT table
-  ggplot(features_df, aes(x = Feature, y = Value)) +
-    geom_col(fill = case_study_colors["accent"], alpha = 0.8) +
-    geom_text(aes(label = paste(Value, Unit)), 
-              vjust = -0.5, size = 3, angle = 45, hjust = 0) +
-    labs(
-      title = "Real-time Feature Values",
-      subtitle = "Current biosignal measurements and state probabilities",
-      x = "Feature",
-      y = "Value"
-    ) +
+    ylim(0, 1) +
+    scale_y_continuous(labels = scales::percent_format()) +
     theme_case_study() +
-    theme(
-      axis.text.x = element_text(angle = 45, hjust = 1),
-      axis.text.y = element_text(size = 8)
-    )
+    theme(legend.position = "bottom")
 }
 
-save_plot(features_gt_plot(), "features_gt.png")
+save_plot(state_prob_plot(), "state_prob_plot.png")
 
-# 6. Calibration Plot
-cat("📊 Creating calibration plot...\n")
+# 4. MSI Card Visualization
+cat("🎯 Creating MSI card visualization...\n")
+msi_card_plot <- function() {
+  # Calculate MSI using EXACT app logic
+  df <- tail(data, 1800)
+  
+  # Compute rolling grip CV% (15s window ~= 75 samples at 5Hz)
+  window_size <- 75L
+  if (nrow(df) >= window_size) {
+    df$grip_cv <- zoo::rollapply(
+      df$grip_force, 
+      width = window_size, 
+      FUN = function(x) {
+        m <- mean(x, na.rm = TRUE)
+        s <- sd(x, na.rm = TRUE)
+        if (!is.finite(m) || m == 0) return(NA_real_)
+        100 * s / m
+      }, 
+      by = 1, 
+      partial = TRUE, 
+      align = "right",
+      fill = NA
+    )
+  } else {
+    df$grip_cv <- 100 * sd(df$grip_force, na.rm = TRUE) / mean(df$grip_force, na.rm = TRUE)
+  }
+  
+  # Reference window for z-scoring (first 120s ~= 600 samples at 5Hz)
+  ref_n <- min(600, nrow(df))
+  ref_idx <- seq_len(ref_n)
+  
+  # Z-scores using reference window
+  tremor_mu <- mean(df$tremor_amplitude[ref_idx], na.rm = TRUE)
+  tremor_sd <- sd(df$tremor_amplitude[ref_idx], na.rm = TRUE)
+  gripcv_mu <- mean(df$grip_cv[ref_idx], na.rm = TRUE)
+  gripcv_sd <- sd(df$grip_cv[ref_idx], na.rm = TRUE)
+  
+  df$tremor_z <- (df$tremor_amplitude - tremor_mu) / tremor_sd
+  df$gripcv_z <- (df$grip_cv - gripcv_mu) / gripcv_sd
+  
+  # Composite MSI (lower tremor/gripcv is better, so negate)
+  w_tremor <- 0.6
+  w_gripcv <- 0.4
+  df$msi_z <- pmax(pmin(-df$tremor_z, 3), -3) * w_tremor + 
+               pmax(pmin(-df$gripcv_z, 3), -3) * w_gripcv
+  
+  # Map to 0-100 scale for display
+  df$msi_100 <- scales::rescale(df$msi_z, to = c(0, 100), from = c(-2.5, 2.5))
+  
+  # Create MSI visualization
+  latest_msi <- tail(df$msi_100, 1)
+  msi_status <- if (latest_msi <= 25) "Critical" else if (latest_msi <= 40) "Elevated" else "Normal"
+  
+  ggplot(df, aes(x = timestamp/60, y = msi_100)) +
+    geom_line(color = case_study_colors["accent"], linewidth = 2) +
+    geom_hline(yintercept = 40, linetype = "dashed", color = case_study_colors["warn"]) +
+    geom_hline(yintercept = 25, linetype = "dashed", color = case_study_colors["crit"]) +
+    labs(
+      title = "Motor Steadiness Index (MSI)",
+      subtitle = paste("Current:", round(latest_msi), "/100 -", msi_status),
+      x = "Time (min)",
+      y = "MSI Score (0-100)"
+    ) +
+    ylim(0, 100) +
+    theme_case_study()
+}
+
+save_plot(msi_card_plot(), "msi_card.png")
+
+# 5. CLI Card Visualization
+cat("🧠 Creating CLI card visualization...\n")
+cli_card_plot <- function() {
+  # Calculate CLI using EXACT app logic
+  df <- tail(data, 1800)
+  
+  # Reference window for z-scoring (first 120s ~= 600 samples at 5Hz)
+  ref_n <- min(600, nrow(df))
+  ref_idx <- seq_len(ref_n)
+  
+  # Z-scores
+  pupil_mu <- mean(df$pupil_diameter[ref_idx], na.rm = TRUE)
+  pupil_sd <- sd(df$pupil_diameter[ref_idx], na.rm = TRUE)
+  hrv_mu <- mean(df$hrv_rmssd[ref_idx], na.rm = TRUE)
+  hrv_sd <- sd(df$hrv_rmssd[ref_idx], na.rm = TRUE)
+  
+  df$pupil_z <- (df$pupil_diameter - pupil_mu) / pupil_sd
+  df$hrv_drop_z <- -(df$hrv_rmssd - hrv_mu) / hrv_sd  # Negative because HRV drops with load
+  
+  # Composite Load Index (higher pupil + lower HRV = higher load)
+  w_pupil <- 0.6
+  w_hrv <- 0.4
+  df$load_z <- pmax(pmin(df$pupil_z, 3), -3) * w_pupil + 
+               pmax(pmin(df$hrv_drop_z, 3), -3) * w_hrv
+  
+  # Map to 0-100 scale
+  df$load_100 <- scales::rescale(df$load_z, to = c(0, 100), from = c(-2.5, 2.5))
+  
+  # Create CLI visualization
+  latest_load <- tail(df$load_100, 1)
+  load_status <- if (latest_load >= 60) "High Load" else if (latest_load >= 40) "Moderate" else "Low"
+  
+  ggplot(df, aes(x = timestamp/60, y = load_100)) +
+    geom_line(color = case_study_colors["accent"], linewidth = 2) +
+    geom_hline(yintercept = 60, linetype = "dashed", color = case_study_colors["crit"]) +
+    geom_hline(yintercept = 40, linetype = "dashed", color = case_study_colors["warn"]) +
+    labs(
+      title = "Cognitive Load Index (CLI)",
+      subtitle = paste("Current:", round(latest_load), "/100 -", load_status),
+      x = "Time (min)",
+      y = "CLI Score (0-100)"
+    ) +
+    ylim(0, 100) +
+    theme_case_study()
+}
+
+save_plot(cli_card_plot(), "cli_card.png")
+
+# 6. Calibration Plot (EXACT from app)
+cat("📊 Creating calibration plot (exact from app)...\n")
 calibration_plot <- function() {
-  # Use calibration metrics function
+  # Use calibration metrics function - EXACT from app
   p_hat <- data$state_probs_lapse
   y <- as.integer(data$cognitive_state == "Attentional Lapse")
   
@@ -337,77 +330,7 @@ calibration_plot <- function() {
 
 save_plot(calibration_plot(), "calibration.png")
 
-# 7. Probability Distributions Plot
-cat("📈 Creating probability distributions plot...\n")
-prob_dists_plot <- function() {
-  plot_data <- data %>%
-    select(state_probs_normal, state_probs_highload, state_probs_lapse, cognitive_state) %>%
-    pivot_longer(cols = starts_with("state_probs"), 
-                 names_to = "predicted_state", 
-                 values_to = "probability") %>%
-    mutate(predicted_state = case_when(
-      predicted_state == "state_probs_normal" ~ "Normal",
-      predicted_state == "state_probs_highload" ~ "High Load",
-      predicted_state == "state_probs_lapse" ~ "Attentional Lapse"
-    ))
-  
-  ggplot(plot_data, aes(x = probability, fill = predicted_state)) +
-    geom_density(alpha = 0.7) +
-    geom_vline(xintercept = 0.3, linetype = "dashed", color = case_study_colors["crit"]) +
-    geom_vline(xintercept = 0.6, linetype = "dashed", color = case_study_colors["warn"]) +
-    scale_fill_manual(values = case_study_state_colors) +
-    labs(
-      title = "Predicted Probability Distributions",
-      subtitle = "Density of predicted probabilities by cognitive state",
-      x = "Predicted Probability",
-      y = "Density",
-      fill = "Predicted State"
-    ) +
-    theme_case_study() +
-    facet_wrap(~predicted_state, scales = "free_y")
-}
-
-save_plot(prob_dists_plot(), "prob_dists.png")
-
-# 8. Stability Plot
-cat("📊 Creating stability plot...\n")
-stability_plot <- function() {
-  # Create evidence signal and hysteresis
-  plot_data <- data %>%
-    mutate(
-      time_min = timestamp / 60,
-      evidence = state_probs_lapse,
-      naive_state = ifelse(evidence > 0.3, "Lapse", "Normal"),
-      hysteresis_state = case_when(
-        evidence > 0.6 ~ "Lapse",
-        evidence < 0.2 ~ "Normal",
-        TRUE ~ "Transition"
-      )
-    ) %>%
-    tail(1800)
-  
-  ggplot(plot_data, aes(x = time_min, y = evidence)) +
-    geom_line(aes(color = hysteresis_state), linewidth = 0.8) +
-    geom_hline(yintercept = 0.6, linetype = "dashed", color = case_study_colors["crit"]) +
-    geom_hline(yintercept = 0.2, linetype = "dotted", color = case_study_colors["ok"]) +
-    scale_color_manual(values = c(
-      "Normal" = case_study_colors["ok"],
-      "Lapse" = case_study_colors["crit"],
-      "Transition" = case_study_colors["warn"]
-    )) +
-    labs(
-      title = "Prediction Stability with Hysteresis",
-      subtitle = "Evidence signal with enter/exit thresholds",
-      x = "Time (min)",
-      y = "Evidence Signal",
-      color = "State"
-    ) +
-    theme_case_study()
-}
-
-save_plot(stability_plot(), "stability.png")
-
-# 9. Feature Importance Plot
+# 7. Feature Importance (if model exists)
 cat("📊 Creating feature importance plot...\n")
 feat_importance_plot <- function() {
   if (file.exists(model_path)) {
@@ -443,41 +366,6 @@ feat_importance_plot <- function() {
 
 save_plot(feat_importance_plot(), "feat_importance.png")
 
-# 10. Policy Overlay Plot
-cat("📊 Creating policy overlay plot...\n")
-policy_overlay_plot <- function() {
-  # Create policy curves
-  prob_range <- seq(0, 1, by = 0.01)
-  
-  policy_df <- data.frame(
-    probability = prob_range,
-    AG_policy = prob_range,  # Always Go
-    SDT_policy = ifelse(prob_range > 0.5, 1, 0),  # Signal Detection Theory
-    ToT_policy = pmin(prob_range * 1.5, 1)  # Time-on-Task adjusted
-  ) %>%
-    pivot_longer(cols = -probability, names_to = "Policy", values_to = "Decision")
-  
-  ggplot(policy_df, aes(x = probability, y = Decision, color = Policy)) +
-    geom_line(linewidth = 1) +
-    geom_vline(xintercept = 0.3, linetype = "dashed", color = case_study_colors["neutral"]) +
-    geom_vline(xintercept = 0.6, linetype = "dotted", color = case_study_colors["neutral"]) +
-    scale_color_manual(values = c(
-      "AG_policy" = case_study_colors["accent"],
-      "SDT_policy" = case_study_colors["warn"],
-      "ToT_policy" = case_study_colors["crit"]
-    )) +
-    labs(
-      title = "Policy Overlay Comparison",
-      subtitle = "Different decision policies for cognitive state management",
-      x = "Predicted Probability",
-      y = "Decision Threshold",
-      color = "Policy"
-    ) +
-    theme_case_study()
-}
-
-save_plot(policy_overlay_plot(), "policy_overlay.png")
-
-cat("🎉 Gallery generation complete!\n")
+cat("🎉 EXACT app plots generation complete!\n")
 cat("📁 Images saved to: case_study/images/\n")
 cat("🖼️  Run scripts/91_thumbs.R to generate thumbnails\n")
