@@ -2,11 +2,19 @@ library(shiny)
 library(bslib)
 library(plotly)
 library(DT)
+library(sparkline)
+library(zoo)
+library(scales)
+library(glue)
 # library(shinyjs)  # DISABLED - not currently used, avoiding dependency
 # library(cicerone)  # DISABLED - causes opacity overlay
 
 # Load the setup
 source("../scripts/00_setup.R")
+
+# Load theme and MSI helpers
+source("../R/theme_md.R")
+source("../R/feature_hrv.R")
 
 # Source experimental control modules
 source("../R/ui_constants.R")
@@ -226,6 +234,11 @@ ui <- tagList(
           $('body').css({opacity: 1, filter: 'none'});
         }, 100);
       });
+      
+      // Handler for status pill updates
+      Shiny.addCustomMessageHandler('evaljs', function(message) {
+        eval(message.code);
+      });
     "))
   ),
   
@@ -316,12 +329,79 @@ ui <- tagList(
              )
           ),
           fluidRow(
-            column(6, plotlyOutput("pupil_plot", height = "300px")),
-            column(6, plotlyOutput("grip_plot", height = "300px"))
+            column(6, 
+              # Cognitive Load Index Card
+              div(style = "background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; height: 300px; display: flex; flex-direction: column;",
+                div(style = "display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;",
+                  tags$strong("Cognitive Load Index", style = "font-size: 1.1em;"),
+                  span(id = "load-status-pill",
+                       style = "padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.75rem; font-weight: 500; border: 1px solid #e5e7eb;")
+                ),
+                div(style = "display: flex; align-items: baseline; gap: 10px; margin-bottom: 16px;",
+                  tags$h2(textOutput("load_index", inline = TRUE), style = "margin: 0; font-size: 2.5em; font-weight: 600;"),
+                  span("/100", style = "color: #6b7280; font-size: 0.9em;")
+                ),
+                div(style = "flex: 1; overflow: hidden;",
+                  div(style = "display: grid; grid-template-columns: 90px 1fr; gap: 8px; align-items: center; margin-bottom: 8px;",
+                    span("Pupil Dilation", style = "color: #6b7280; font-size: 0.85em; font-weight: 500;"),
+                    sparklineOutput("spark_pupil", width = "100%", height = "35px")
+                  ),
+                  div(style = "display: grid; grid-template-columns: 90px 1fr; gap: 8px; align-items: center;",
+                    span("HRV Drop", style = "color: #6b7280; font-size: 0.85em; font-weight: 500;"),
+                    sparklineOutput("spark_hrv_drop", width = "100%", height = "35px")
+                  )
+                ),
+                tags$details(style = "margin-top: 12px; font-size: 0.85em;",
+                  tags$summary(style = "cursor: pointer; color: #1f9bb6; font-weight: 500;", "Show Details"),
+                  div(style = "margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb; max-height: 400px; overflow-y: auto;",
+                    div(style = "margin-bottom: 12px;",
+                      plotOutput("pupil_plot_small", height = "160px")
+                    ),
+                    div(
+                      plotOutput("hrv_plot_small", height = "160px")
+                    )
+                  )
+                )
+              )
+            ),
+            column(6, 
+              # Motor Steadiness Index (MSI) Card
+              div(style = "background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; height: 300px; display: flex; flex-direction: column;",
+                div(style = "display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;",
+                  tags$strong("Motor Steadiness Index", style = "font-size: 1.1em;"),
+                  span(id = "msi-status-pill",
+                       style = "padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.75rem; font-weight: 500; border: 1px solid #e5e7eb;")
+                ),
+                div(style = "display: flex; align-items: baseline; gap: 10px; margin-bottom: 16px;",
+                  tags$h2(textOutput("msi_value", inline = TRUE), style = "margin: 0; font-size: 2.5em; font-weight: 600;"),
+                  span("/100", style = "color: #6b7280; font-size: 0.9em;")
+                ),
+                div(style = "flex: 1; overflow: hidden;",
+                  div(style = "display: grid; grid-template-columns: 90px 1fr; gap: 8px; align-items: center; margin-bottom: 8px;",
+                    span("Tremor", style = "color: #6b7280; font-size: 0.85em; font-weight: 500;"),
+                    sparklineOutput("spark_tremor", width = "100%", height = "35px")
+                  ),
+                  div(style = "display: grid; grid-template-columns: 90px 1fr; gap: 8px; align-items: center;",
+                    span("Grip CV%", style = "color: #6b7280; font-size: 0.85em; font-weight: 500;"),
+                    sparklineOutput("spark_gripcv", width = "100%", height = "35px")
+                  )
+                ),
+                tags$details(style = "margin-top: 12px; font-size: 0.85em;",
+                  tags$summary(style = "cursor: pointer; color: #1f9bb6; font-weight: 500;", "Show Details"),
+                  div(style = "margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb; max-height: 400px; overflow-y: auto;",
+                    div(style = "margin-bottom: 12px;",
+                      plotOutput("tremor_plot_small", height = "160px")
+                    ),
+                    div(
+                      plotOutput("gripcv_plot_small", height = "160px")
+                    )
+                  )
+                )
+              )
+            )
           ),
           fluidRow(
-            column(6, plotlyOutput("tremor_plot", height = "300px")),
-            column(6, plotlyOutput("state_prob_plot", height = "350px"))
+            column(12, plotlyOutput("state_prob_plot", height = "350px"))
           )
         ),
         
@@ -362,9 +442,61 @@ ui <- tagList(
 ) # Close tagList
 
 server <- function(input, output, session) {
-  # ========================================================================
+  
+  # ============================================================================
+  # MSI (Motor Steadiness Index) Helpers
+  # ============================================================================
+  
+  # Safe z-score with capping
+  zscore_series <- function(x, ref_mu = NULL, ref_sd = NULL) {
+    x <- as.numeric(x)
+    mu <- if (is.null(ref_mu)) mean(x, na.rm = TRUE) else ref_mu
+    sd_val <- if (is.null(ref_sd)) stats::sd(x, na.rm = TRUE) else ref_sd
+    if (!is.finite(sd_val) || sd_val == 0) sd_val <- 1
+    (x - mu) / sd_val
+  }
+  
+  # Cap z-scores to prevent outliers
+  scale_cap <- function(x, cap = 3) {
+    x <- as.numeric(x)
+    x[x >  cap] <-  cap
+    x[x < -cap] <- -cap
+    x
+  }
+  
+  # Coefficient of variation (%)
+  cv_percent <- function(x) {
+    x <- as.numeric(x)
+    m <- mean(x, na.rm = TRUE)
+    s <- stats::sd(x, na.rm = TRUE)
+    if (!is.finite(m) || m == 0) return(NA_real_)
+    100 * s / m
+  }
+  
+  # Map MSI z-score to 0-100 scale (higher is better)
+  msi_to_100 <- function(msi_z, span = 2.5) {
+    scales::rescale(msi_z, to = c(0, 100), from = c(-span, span))
+  }
+  
+  # MSI status thresholds
+  msi_status <- function(msi100, warn = 40, crit = 25) {
+    if (is.na(msi100)) return("Unknown")
+    if (msi100 <= crit) "Critical" else if (msi100 <= warn) "Elevated" else "Normal"
+  }
+  
+  # Status colors matching md_colors
+  status_color <- function(s) {
+    switch(s, 
+      "Normal" = "#27ae60",    # md_colors$ok
+      "Elevated" = "#f39c12",  # md_colors$warn
+      "Critical" = "#e74c3c",  # md_colors$crit
+      "#6b7280"                # md_colors$muted
+    )
+  }
+  
+  # ============================================================================
   # LOAD DIAGNOSTIC DATA (REAL MODEL DIAGNOSTICS)
-  # ========================================================================
+  # ============================================================================
   
   # Load pre-computed diagnostic artifacts
   diagnostics <- tryCatch({
@@ -847,6 +979,326 @@ server <- function(input, output, session) {
              legend = list(orientation = 'h', y = -0.35, x = 0.5, xanchor = 'center'),
              margin = list(b = 100, t = 50, l = 50, r = 50))
   })
+  
+  # HRV (RMSSD) plot
+  output$plot_hrv_rmssd <- renderPlot({
+    req(realtime_data())
+    df <- realtime_data()
+    if (nrow(df) == 0) return(NULL)
+    
+    # Compute rolling RMSSD if available
+    if ("hrv_rmssd" %in% names(df) && !all(is.na(df$hrv_rmssd))) {
+      ggplot2::ggplot(df, ggplot2::aes(x = timestamp / 60, y = hrv_rmssd)) +
+        ggplot2::geom_line(color = "#0ea5b7", linewidth = 0.8) +
+        ggplot2::labs(
+          title = "Heart Rate Variability (RMSSD)",
+          subtitle = "Lower RMSSD ↘ typically accompanies sustained cognitive load",
+          x = "Time (min)",
+          y = "RMSSD (ms)"
+        ) +
+        ggplot2::theme_minimal() +
+        theme_md()
+    } else {
+      # Fallback if no HRV data
+      ggplot2::ggplot(data.frame(x = 0, y = 0), ggplot2::aes(x, y)) +
+        ggplot2::geom_blank() +
+        ggplot2::labs(
+          title = "Heart Rate Variability (RMSSD)",
+          subtitle = "HRV data not available in current simulation",
+          x = "Time (min)",
+          y = "RMSSD (ms)"
+        ) +
+        ggplot2::theme_minimal() +
+        theme_md()
+    }
+  }, bg = "white")
+  
+  # ============================================================================
+  # MSI (Motor Steadiness Index) Calculation and Outputs
+  # ============================================================================
+  
+  # MSI weights (can be made user-tunable via sliders)
+  msi_weights <- reactiveVal(list(w_tremor = 0.6, w_gripcv = 0.4))
+  
+  # MSI data with z-scores and composite index
+  msi_data <- reactive({
+    req(realtime_data())
+    df <- realtime_data()
+    
+    if (nrow(df) < 2) {
+      return(df %>% 
+        mutate(
+          grip_cv = NA_real_,
+          tremor_z = NA_real_,
+          gripcv_z = NA_real_,
+          msi_z = NA_real_,
+          msi_100 = 50,
+          msi_state = "Normal",
+          msi_color = "#27ae60"
+        ))
+    }
+    
+    # Compute rolling grip CV% (15s window ~= 75 samples at 5Hz)
+    window_size <- 75L
+    if (nrow(df) >= window_size) {
+      df$grip_cv <- zoo::rollapply(
+        df$grip_force, 
+        width = window_size, 
+        FUN = cv_percent, 
+        by = 1, 
+        partial = TRUE, 
+        align = "right",
+        fill = NA
+      )
+    } else {
+      df$grip_cv <- cv_percent(df$grip_force)
+    }
+    
+    # Reference window for z-scoring (first 120s ~= 600 samples at 5Hz)
+    ref_n <- min(600, nrow(df))
+    ref_idx <- seq_len(ref_n)
+    
+    # Z-scores using reference window
+    tremor_mu <- mean(df$tremor_amplitude[ref_idx], na.rm = TRUE)
+    tremor_sd <- stats::sd(df$tremor_amplitude[ref_idx], na.rm = TRUE)
+    gripcv_mu <- mean(df$grip_cv[ref_idx], na.rm = TRUE)
+    gripcv_sd <- stats::sd(df$grip_cv[ref_idx], na.rm = TRUE)
+    
+    df$tremor_z <- zscore_series(df$tremor_amplitude, tremor_mu, tremor_sd)
+    df$gripcv_z <- zscore_series(df$grip_cv, gripcv_mu, gripcv_sd)
+    
+    # Composite MSI (lower tremor/gripcv is better, so negate)
+    w <- msi_weights()
+    df$msi_z <- scale_cap(-df$tremor_z, cap = 3) * w$w_tremor + 
+                scale_cap(-df$gripcv_z, cap = 3) * w$w_gripcv
+    
+    # Map to 0-100 scale for display
+    df$msi_100 <- msi_to_100(df$msi_z)
+    df$msi_state <- vapply(df$msi_100, msi_status, character(1), USE.NAMES = FALSE)
+    df$msi_color <- vapply(df$msi_state, status_color, character(1), USE.NAMES = FALSE)
+    
+    df
+  })
+  
+  # Current MSI value
+  current_msi <- reactive({
+    req(msi_data())
+    df <- msi_data()
+    if (nrow(df) == 0) return(NULL)
+    tail(df, 1)
+  })
+  
+  # MSI KPI value
+  output$msi_value <- renderText({
+    req(current_msi())
+    sprintf("%.0f", current_msi()$msi_100)
+  })
+  
+  # Update MSI status pill color
+  observe({
+    req(current_msi())
+    s  <- current_msi()$msi_state
+    bg <- current_msi()$msi_color
+    js <- sprintf("
+      const pill = document.getElementById('msi-status-pill');
+      if (pill) {
+        pill.textContent = '%s';
+        pill.style.background = '%s20';
+        pill.style.borderColor = '%s';
+        pill.style.color = '%s';
+      }
+    ", s, bg, bg, bg)
+    session$sendCustomMessage("evaljs", list(code = js))
+  })
+  
+  # Tremor sparkline
+  output$spark_tremor <- renderSparkline({
+    req(msi_data())
+    df <- tail(msi_data(), 600)  # Last ~2 minutes at 5Hz
+    if (nrow(df) < 2) return(NULL)
+    sparkline(df$tremor_amplitude, type = "line", lineColor = "#e74c3c", 
+              fillColor = FALSE, lineWidth = 2, width = "100%", height = "35px")
+  })
+  
+  # Grip CV sparkline
+  output$spark_gripcv <- renderSparkline({
+    req(msi_data())
+    df <- tail(msi_data(), 600)  # Last ~2 minutes at 5Hz
+    if (nrow(df) < 2) return(NULL)
+    sparkline(df$grip_cv, type = "line", lineColor = "#f39c12", 
+              fillColor = FALSE, lineWidth = 2, width = "100%", height = "35px")
+  })
+  
+  # Small tremor plot for details section
+  output$tremor_plot_small <- renderPlot({
+    req(msi_data())
+    df <- tail(msi_data(), 900)  # Last ~3 minutes
+    if (nrow(df) < 2) return(NULL)
+    
+    ggplot2::ggplot(df, ggplot2::aes(x = timestamp / 60, y = tremor_amplitude)) +
+      ggplot2::geom_line(color = "#e74c3c", linewidth = 0.8) +
+      ggplot2::labs(
+        title = "Tremor Amplitude (8–12 Hz)",
+        x = "Time (min)",
+        y = "RMS (μm)"
+      ) +
+      ggplot2::theme_minimal(base_size = 10) +
+      theme_md()
+  }, bg = "white")
+  
+  # Small grip CV plot for details section
+  output$gripcv_plot_small <- renderPlot({
+    req(msi_data())
+    df <- tail(msi_data(), 900)  # Last ~3 minutes
+    if (nrow(df) < 2 || all(is.na(df$grip_cv))) return(NULL)
+    
+    ggplot2::ggplot(df, ggplot2::aes(x = timestamp / 60, y = grip_cv)) +
+      ggplot2::geom_line(color = "#f39c12", linewidth = 0.8) +
+      ggplot2::labs(
+        title = "Grip Force Variability",
+        x = "Time (min)",
+        y = "CV%"
+      ) +
+      ggplot2::theme_minimal(base_size = 10) +
+      theme_md()
+  }, bg = "white")
+  
+  # ============================================================================
+  # Cognitive Load Index Calculation and Outputs
+  # ============================================================================
+  
+  # Cognitive Load Index (Pupil + HRV)
+  load_weights <- reactiveVal(list(w_pupil = 0.6, w_hrv = 0.4))
+  
+  load_data <- reactive({
+    req(realtime_data())
+    df <- realtime_data()
+    
+    if (nrow(df) < 2) {
+      return(df %>% mutate(
+        pupil_z = NA_real_,
+        hrv_drop_z = NA_real_,
+        load_z = NA_real_,
+        load_100 = 50,
+        load_state = "Normal",
+        load_color = "#27ae60"
+      ))
+    }
+    
+    # Reference window for z-scoring (first 120s ~= 600 samples at 5Hz)
+    ref_n <- min(600, nrow(df))
+    ref_idx <- seq_len(ref_n)
+    
+    # Z-scores
+    pupil_mu <- mean(df$pupil_diameter[ref_idx], na.rm = TRUE)
+    pupil_sd <- stats::sd(df$pupil_diameter[ref_idx], na.rm = TRUE)
+    hrv_mu <- mean(df$hrv_rmssd[ref_idx], na.rm = TRUE)
+    hrv_sd <- stats::sd(df$hrv_rmssd[ref_idx], na.rm = TRUE)
+    
+    df$pupil_z <- zscore_series(df$pupil_diameter, pupil_mu, pupil_sd)
+    df$hrv_drop_z <- -zscore_series(df$hrv_rmssd, hrv_mu, hrv_sd)  # Negative because HRV drops with load
+    
+    # Composite Load Index (higher pupil + lower HRV = higher load)
+    w <- load_weights()
+    df$load_z <- scale_cap(df$pupil_z, cap = 3) * w$w_pupil + 
+                 scale_cap(df$hrv_drop_z, cap = 3) * w$w_hrv
+    
+    # Map to 0-100 scale
+    df$load_100 <- msi_to_100(df$load_z)
+    df$load_state <- vapply(df$load_100, function(x) {
+      if (is.na(x)) "Unknown"
+      else if (x >= 60) "High Load" else if (x >= 40) "Moderate" else "Low"
+    }, character(1), USE.NAMES = FALSE)
+    df$load_color <- vapply(df$load_state, function(s) {
+      switch(s, 
+        "High Load" = "#e74c3c",
+        "Moderate" = "#f39c12",
+        "Low" = "#27ae60",
+        "#6b7280"
+      )
+    }, character(1), USE.NAMES = FALSE)
+    
+    df
+  })
+  
+  current_load <- reactive({
+    req(load_data())
+    df <- load_data()
+    if (nrow(df) == 0) return(NULL)
+    tail(df, 1)
+  })
+  
+  output$load_index <- renderText({
+    req(current_load())
+    sprintf("%.0f", current_load()$load_100)
+  })
+  
+  observe({
+    req(current_load())
+    s  <- current_load()$load_state
+    bg <- current_load()$load_color
+    js <- sprintf("
+      const pill = document.getElementById('load-status-pill');
+      if (pill) {
+        pill.textContent = '%s';
+        pill.style.background = '%s20';
+        pill.style.borderColor = '%s';
+        pill.style.color = '%s';
+      }
+    ", s, bg, bg, bg)
+    session$sendCustomMessage("evaljs", list(code = js))
+  })
+  
+  output$spark_pupil <- renderSparkline({
+    req(load_data())
+    df <- tail(load_data(), 600)  # Last ~2 minutes at 5Hz
+    if (nrow(df) < 2) return(NULL)
+    sparkline(df$pupil_diameter, type = "line", lineColor = "#3498db", 
+              fillColor = FALSE, lineWidth = 2, width = "100%", height = "35px")
+  })
+  
+  output$spark_hrv_drop <- renderSparkline({
+    req(load_data())
+    df <- tail(load_data(), 600)
+    if (nrow(df) < 2) return(NULL)
+    # Show inverted HRV (drop = higher values)
+    sparkline(-df$hrv_rmssd, type = "line", lineColor = "#e67e22", 
+              fillColor = FALSE, lineWidth = 2, width = "100%", height = "35px")
+  })
+  
+  # Small pupil plot for Cognitive Load Index details section
+  output$pupil_plot_small <- renderPlot({
+    req(load_data())
+    df <- tail(load_data(), 900)  # Last ~3 minutes
+    if (nrow(df) < 2) return(NULL)
+    
+    ggplot2::ggplot(df, ggplot2::aes(x = timestamp / 60, y = pupil_diameter)) +
+      ggplot2::geom_line(color = "#3498db", linewidth = 0.8) +
+      ggplot2::labs(
+        title = "Pupil Diameter (TEPR)",
+        x = "Time (min)",
+        y = "Diameter (mm)"
+      ) +
+      ggplot2::theme_minimal(base_size = 10) +
+      theme_md()
+  }, bg = "white")
+  
+  # Small HRV plot for Cognitive Load Index details section
+  output$hrv_plot_small <- renderPlot({
+    req(load_data())
+    df <- tail(load_data(), 900)  # Last ~3 minutes
+    if (nrow(df) < 2 || !"hrv_rmssd" %in% names(df) || all(is.na(df$hrv_rmssd))) return(NULL)
+    
+    ggplot2::ggplot(df, ggplot2::aes(x = timestamp / 60, y = hrv_rmssd)) +
+      ggplot2::geom_line(color = "#0ea5b7", linewidth = 0.8) +
+      ggplot2::labs(
+        title = "Heart Rate Variability (RMSSD)",
+        x = "Time (min)",
+        y = "RMSSD (ms)"
+      ) +
+      ggplot2::theme_minimal(base_size = 10) +
+      theme_md()
+  }, bg = "white")
   
   # ========================================================================
   # GT LIVE TABLE INTEGRATION

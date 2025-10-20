@@ -336,6 +336,68 @@ install.packages(c("shiny", "bslib", "plotly", "tidyverse",
 - Check the "Show feature values" checkbox in the Control Panel
 - The table uses `conditionalPanel` for visibility toggle
 
+### **Export Demo Assets**
+
+Generate static images and demo data for portfolio/documentation:
+
+```bash
+# Recommended: use --vanilla flag to avoid renv issues
+Rscript --vanilla scripts/export_demo_assets.R
+
+# Or without --vanilla (requires renv setup)
+Rscript scripts/export_demo_assets.R
+```
+
+This creates `assets/demo/` with:
+- **monitor_02.png** - TEPR + RMSSD biosignal time series
+- **monitor_03.png** - Feature values by cognitive state
+- **calibration.png** - Reliability diagram with ECE/MCE metrics
+- **prob_dists.png** - Probability distributions
+- **stability.png** - Model stability over time
+- **Thumbnails** (if `magick` available): `thumb_*.jpg` (480px, quality 70)
+- **demo_data_10min.csv** - Simulated 10-minute segment
+
+All images use the app's Okabe-Ito color palette (colorblind-safe):
+- Normal: `#009E73` (green)
+- High Load: `#E69F00` (amber)
+- Attentional Lapse: `#D55E00` (red-orange)
+
+**Note:** Copy `assets/demo/*` to your portfolio repo's `/assets/demo/` directory.
+
+### **Showcase Assets (for Quarto Case Study)**
+
+The repo includes a local theme (`R/theme_md.R`, `inst/app/www/md-theme.css`) matching the case study palette.
+
+Generate screenshots/GIFs with:
+
+```bash
+# Uses DEMO_MODE to load lightweight data (inst/demo/demo_data_10min.csv)
+DEMO_MODE=1 Rscript scripts/render_showcase.R
+
+# Or set option in R:
+# options(surgdash.demo = TRUE)
+# source("scripts/render_showcase.R")
+```
+
+Outputs land in `showcase/` and can be embedded in the Quarto page (fast to load):
+- **live_tepr_hrv.png** (110K, 1280×780 @ 144 DPI) - TEPR + HRV time series
+- **feat_by_state.png** (43K, 1280×780) - Feature comparison by cognitive state
+- **calibration_lapse.png** (47K, 1000×760) - Reliability diagram with ECE/MCE/Brier
+- **prob_dists.png** (39K, 800×1000) - Probability distributions by true state
+- **stability_lapse.png** (94K, 1280×780) - Prediction stability over time
+
+**Key Features:**
+- **Zero code duplication** - Uses same plotting functions as live app (`R/plots_live_monitor.R`, `R/plots_diagnostics.R`)
+- **Exact visual match** - Screenshots guaranteed to match app visuals
+- **Lightweight** - No heavy model loading, uses 311K demo data
+- **MD theme** - All plots use `theme_md()` and MD color palette
+
+**Color Palette** (case study match):
+- Normal: `#0ea5b7` (teal) | High Load: `#bc3c29` (red) | Lapse: `#6b7280` (gray)
+- Accent: `#1f9bb6` | Warn: `#f39c12` | Muted: `#4b5563`
+
+**Maintenance Note:** To update showcase images, simply re-run `render_showcase.R`. Plots automatically use latest theme and data.
+
 ---
 
 ## 💻 Dashboard Interface

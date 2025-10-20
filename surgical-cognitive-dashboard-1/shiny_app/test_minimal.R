@@ -1,35 +1,35 @@
+# Minimal test app to isolate reactive issue
 library(shiny)
 
 ui <- fluidPage(
-  tags$head(
-    tags$style(HTML("
-      /* KILL ALL OPACITY SOURCES */
-      body, .container-fluid, * { opacity: 1 !important; }
-      .recalculating { opacity: 1 !important; }
-      .shiny-busy { opacity: 1 !important; }
-    "))
-  ),
+  titlePanel("Minimal Reactive Test"),
   
-  h1("Minimal Opacity Test"),
-  p("If this text is opaque/faded, the issue is external to our code."),
-  p("If this is CLEAR, then our modules are causing it."),
-  
-  h3(textOutput("counter")),
-  p("Counter updates every 200ms to simulate 5Hz")
+  mainPanel(
+    h3("Static Test: This should always show"),
+    p("REACTIVE TEST:", textOutput("test_output", inline = TRUE)),
+    p("Counter:", textOutput("counter_output", inline = TRUE))
+  )
 )
 
 server <- function(input, output, session) {
-  count <- reactiveVal(0)
   
+  # Simple counter
+  counter <- reactiveVal(0)
+  
+  # Update counter every second
   observe({
-    invalidateLater(200, session)
-    count(count() + 1)
+    invalidateLater(1000, session)
+    counter(counter() + 1)
   })
   
-  output$counter <- renderText({
-    paste("Count:", count())
+  # Test outputs
+  output$test_output <- renderText({
+    format(Sys.time(), "%H:%M:%S")
+  })
+  
+  output$counter_output <- renderText({
+    counter()
   })
 }
 
-shinyApp(ui, server)
-
+shinyApp(ui = ui, server = server)

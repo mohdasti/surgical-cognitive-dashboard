@@ -186,14 +186,16 @@ tremor_fatigue_model <- function(time_on_task_min, baseline_rms,
                                  growth_first_30min = 10, 
                                  growth_per_hr_after = 25) {
   
-  if (time_on_task_min <= 30) {
-    # Linear growth in first 30 minutes
-    growth_pct <- (time_on_task_min / 30) * growth_first_30min
-  } else {
-    # Accumulated growth after 30 minutes
-    hours_after <- (time_on_task_min - 30) / 60
-    growth_pct <- growth_first_30min + (hours_after * growth_per_hr_after)
-  }
+  # Vectorized version
+  # For first 30 minutes: linear growth
+  # After 30 minutes: accumulated growth
+  hours_after <- pmax(0, (time_on_task_min - 30) / 60)
+  
+  growth_pct <- ifelse(
+    time_on_task_min <= 30,
+    (time_on_task_min / 30) * growth_first_30min,
+    growth_first_30min + (hours_after * growth_per_hr_after)
+  )
   
   expected_rms <- baseline_rms * (1 + growth_pct / 100)
   return(expected_rms)

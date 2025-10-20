@@ -1,0 +1,11 @@
+:root{
+  --ink:#0b1526; --muted:#4b5563; --bg:#f7f9fc; --card:#ffffff;
+  --accent:#1f9bb6; --ok:#27ae60; --warn:#f39c12; --crit:#e74c3c; --border:#e5e7eb;
+}
+body{color:var(--ink);background:var(--bg)}
+.card, .box, .well, .panel, .bslib-card{background:var(--card);border:1px solid var(--border);border-radius:12px}
+.badge-ok{background:#eaf7ef;color:#14532d;border:1px solid #cfead7}
+.badge-warn{background:#fff6e5;color:#7a4c00;border:1px solid #fbe2b0}
+.badge-crit{background:#fdeaea;color:#7a1a1a;border:1px solid #f8c1c1}
+a{color:var(--accent)}
+

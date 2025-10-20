@@ -1,3 +1,10 @@
+# Source MD theme if available
+if (file.exists("R/theme_md.R")) {
+  source("R/theme_md.R")
+} else if (file.exists("../R/theme_md.R")) {
+  source("../R/theme_md.R")
+}
+
 diagnosticsUI <- function(id) {
   ns <- NS(id)
   tagList(
@@ -157,7 +164,7 @@ diagnosticsServer <- function(id, calibration_data = NULL, loso_eval = NULL,
           ggplot2::ggplot(ggplot2::aes(y = reorder(feature, feature), x = 1)) +
           ggplot2::geom_point(size = 3, color = "#3498db") +
           ggplot2::labs(x = NULL, y = NULL, title = "Features in Use") +
-          ggplot2::theme_minimal() +
+          ggplot2::theme_minimal() + theme_md() +
           ggplot2::theme(axis.text.x = element_blank(),
                         panel.grid.major.x = element_blank())
       }
