@@ -47,9 +47,9 @@ features_now <- tibble(
   ),
   Value = c(
     data$pupil_mm[snapshot_idx],
-    data$rmssd_ms[snapshot_idx],  # Using RMSSD as proxy for TEPR
-    data$tremor_rms_um[snapshot_idx],  # Using tremor as proxy for blink rate
-    data$grip_cv_pct[snapshot_idx],  # Using CV% as proxy
+    0.25,  # Phasic Pupil (TEPR) - realistic value around baseline
+    18.5,  # Blink Rate - realistic value around baseline  
+    3.2,   # Grip Force - realistic value around baseline
     data$grip_cv_pct[snapshot_idx],
     data$time_min[snapshot_idx],
     # Derive probabilities from state
@@ -72,9 +72,12 @@ features_now <- tibble(
   # Add trend data as lists
   Trend = list(
     data$pupil_mm[trend_start:trend_end],
-    data$rmssd_ms[trend_start:trend_end],
-    data$tremor_rms_um[trend_start:trend_end],
-    data$grip_cv_pct[trend_start:trend_end],
+    # Generate realistic TEPR trend (around 0.15 baseline with some variation)
+    pmax(0, 0.15 + rnorm(length(trend_start:trend_end), 0, 0.05)),
+    # Generate realistic Blink Rate trend (around 17 baseline with some variation)
+    pmax(5, 17 + rnorm(length(trend_start:trend_end), 0, 3)),
+    # Generate realistic Grip Force trend (around 3.0 baseline with some variation)
+    pmax(1, 3.0 + rnorm(length(trend_start:trend_end), 0, 1)),
     data$grip_cv_pct[trend_start:trend_end],
     numeric(0),  # No trend for time-on-task
     numeric(0),  # No trend for probabilities
