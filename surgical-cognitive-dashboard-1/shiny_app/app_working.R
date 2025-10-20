@@ -353,12 +353,12 @@ ui <- tagList(
                 ),
                 tags$details(style = "margin-top: 12px; font-size: 0.85em;",
                   tags$summary(style = "cursor: pointer; color: #1f9bb6; font-weight: 500;", "Show Details"),
-                  div(style = "margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb; max-height: 400px; overflow-y: auto;",
+                  div(style = "margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb; max-height: 200px; overflow-y: auto;",
                     div(style = "margin-bottom: 12px;",
-                      plotOutput("pupil_plot_small", height = "160px")
+                      plotOutput("pupil_plot_small", height = "120px")
                     ),
                     div(
-                      plotOutput("hrv_plot_small", height = "160px")
+                      plotOutput("hrv_plot_small", height = "120px")
                     )
                   )
                 )
@@ -388,12 +388,12 @@ ui <- tagList(
                 ),
                 tags$details(style = "margin-top: 12px; font-size: 0.85em;",
                   tags$summary(style = "cursor: pointer; color: #1f9bb6; font-weight: 500;", "Show Details"),
-                  div(style = "margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb; max-height: 400px; overflow-y: auto;",
+                  div(style = "margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb; max-height: 200px; overflow-y: auto;",
                     div(style = "margin-bottom: 12px;",
-                      plotOutput("tremor_plot_small", height = "160px")
+                      plotOutput("tremor_plot_small", height = "120px")
                     ),
                     div(
-                      plotOutput("gripcv_plot_small", height = "160px")
+                      plotOutput("gripcv_plot_small", height = "120px")
                     )
                   )
                 )
