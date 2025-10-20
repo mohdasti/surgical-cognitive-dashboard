@@ -39,8 +39,8 @@ vignettes/*.pdf
 # R Environment Variables
 .Renviron
 
-# pkgdown site
-docs/
+# pkgdown site (conflicts with our docs/)
+# docs/
 
 # translation temp files
 po/*~
@@ -58,3 +58,51 @@ renv/staging/
 data/processed/*.csv
 data/processed/*.csv.gz
 case_study/images/*.gif
+
+# System files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Log files
+*.log
+/tmp/
+/temp/
+
+# Temporary Shiny files
+shiny_app/shiny_app/
+shiny_app/data/
+shiny_app/scripts/
+
+# Backup files
+*.backup
+*.bak
+*~
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Node modules (if any)
+node_modules/
+
+# Python cache (if any)
+__pycache__/
+*.pyc
+*.pyo
+
+# Jupyter notebook checkpoints
+.ipynb_checkpoints/
+
+# Large model files (keep small ones for demo)
+data/processed/xgb_loso_models.rds
+data/processed/sim_stream_enhanced.csv.gz
+data/processed/simulation_enhanced.rds
+data/processed/sim_hrv_features.csv
+data/processed/sim_blinks.csv
