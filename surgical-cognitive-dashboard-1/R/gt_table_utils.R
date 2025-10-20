@@ -274,7 +274,13 @@ build_features_gt <- function(features_now, refs, personal = NULL) {
       )
     )
 
-  # Sparklines - handle different gtExtras versions
+  # Group headers with emojis FIRST
+  g <- g %>%
+    tab_row_group(label = html("📊 <b>Primary Biosignals</b>"), rows = Group == "Primary Biosignals") %>%
+    tab_row_group(label = html("🧠 <b>Derived Metrics</b>"), rows = Group == "Derived Metrics") %>%
+    tab_row_group(label = html("🎯 <b>Model Predictions</b>"), rows = Group == "Model Predictions")
+
+  # Sparklines - handle different gtExtras versions AFTER grouping
   if (requireNamespace("gtExtras", quietly = TRUE)) {
     # Try gt_plt_sparkline (newer versions) or gt_sparkline (older versions)
     tryCatch({
@@ -301,12 +307,6 @@ build_features_gt <- function(features_now, refs, personal = NULL) {
         }
       )
   }
-
-  # Group headers with emojis
-  g <- g %>%
-    tab_row_group(label = html("📊 <b>Primary Biosignals</b>"), rows = Group == "Primary Biosignals") %>%
-    tab_row_group(label = html("🧠 <b>Derived Metrics</b>"), rows = Group == "Derived Metrics") %>%
-    tab_row_group(label = html("🎯 <b>Model Predictions</b>"), rows = Group == "Model Predictions")
 
   # Footnotes (hover) per row, if we had notes/links—we embed in Ref_CI already; add a brief footnote legend:
   g <- g %>%
