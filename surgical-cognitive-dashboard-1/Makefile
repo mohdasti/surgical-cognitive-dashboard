@@ -1,4 +1,4 @@
-.PHONY: setup simulate features train anomaly shap eval diagnostics app local gallery thumbs features-snapshot
+.PHONY: setup simulate features train anomaly shap eval diagnostics app local gallery thumbs features-snapshot export-gt-table
 
 setup:
 	Rscript -e "source('scripts/00_setup.R'); renv::snapshot(prompt=FALSE)"
@@ -46,3 +46,8 @@ features-snapshot:
 	@echo "📊 Generating features snapshot with trends..."
 	Rscript scripts/92_export_features_snapshot.R
 	@echo "✅ Features snapshot generation complete!"
+
+export-gt-table:
+	@echo "📊 Exporting static GT table with sparklines..."
+	Rscript scripts/93_export_gt_table_static.R
+	@echo "✅ Static GT table export complete!"
