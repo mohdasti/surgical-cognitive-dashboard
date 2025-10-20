@@ -184,7 +184,7 @@ build_features_gt <- function(features_now, refs, personal = NULL) {
     ) %>%
     # Clean and reorder columns for gt:
     transmute(
-      Group    = group,
+      Group    = if ("group.live" %in% names(cur_data())) group.live else group,
       Feature  = Feature,
       Value    = Value,  # keep numeric
       Unit     = Unit_display,

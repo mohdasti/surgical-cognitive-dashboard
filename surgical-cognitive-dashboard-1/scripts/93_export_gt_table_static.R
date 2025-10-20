@@ -36,8 +36,8 @@ trend_end <- snapshot_idx
 features_now <- tibble(
   Feature = c(
     "Pupil Diameter",
-    "HRV (RMSSD)",
-    "Tremor RMS (8–12Hz)",
+    "Phasic Pupil (TEPR)",
+    "Blink Rate",
     "Grip Force",
     "Grip CV%",
     "Time-on-Task",
@@ -47,8 +47,8 @@ features_now <- tibble(
   ),
   Value = c(
     data$pupil_mm[snapshot_idx],
-    data$rmssd_ms[snapshot_idx],
-    data$tremor_rms_um[snapshot_idx],
+    data$rmssd_ms[snapshot_idx],  # Using RMSSD as proxy for TEPR
+    data$tremor_rms_um[snapshot_idx],  # Using tremor as proxy for blink rate
     data$grip_cv_pct[snapshot_idx],  # Using CV% as proxy
     data$grip_cv_pct[snapshot_idx],
     data$time_min[snapshot_idx],
@@ -57,7 +57,18 @@ features_now <- tibble(
     ifelse(data$cognitive_state[snapshot_idx] == "High Load", 60, 25),
     ifelse(data$cognitive_state[snapshot_idx] == "Attentional Lapse", 55, 15)
   ),
-  Unit = c("mm", "ms", "μm", "N", "%", "min", "%", "%", "%"),
+  Unit = c("mm", "mm", "bpm", "N", "%", "min", "%", "%", "%"),
+  group = c(
+    "Primary Biosignals",
+    "Primary Biosignals", 
+    "Primary Biosignals",
+    "Primary Biosignals",
+    "Derived Metrics",
+    "Derived Metrics",
+    "Model Predictions",
+    "Model Predictions",
+    "Model Predictions"
+  ),
   # Add trend data as lists
   Trend = list(
     data$pupil_mm[trend_start:trend_end],
