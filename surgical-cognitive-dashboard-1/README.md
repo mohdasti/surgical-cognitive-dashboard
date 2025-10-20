@@ -190,7 +190,13 @@ DEMO_MODE=1 Rscript scripts/render_showcase.R
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)** - see the [LICENSE](LICENSE) file for details.
+
+Key points of AGPL-3.0:
+- ✅ Free to use, modify, and distribute
+- ✅ Source code must be made available
+- ✅ Network use is distribution (SaaS provision requires source disclosure)
+- ✅ Modifications must also be licensed under AGPL-3.0
 
 ## 📚 References
 
